@@ -1,0 +1,18 @@
+celery==5.2.6
+fastapi==0.75.1
+redis==4.2.2
+uvicorn==0.17.6
+flower==1.0.0
+# alembic==1.7.7
+# SQLAlchemy==1.4.35
+# psycopg2-binary==2.9.3
+passlib==1.7.4
+bcrypt
+python-jose
+cryptography
+fastapi-pagination
+pandas
+python-binance==1.0.15
+motor==2.5.1
+ccxt==1.78.38
+python-multipart==0.0.5

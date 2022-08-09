@@ -1,0 +1,10 @@
+FASTAPI_CONFIG=development
+CELERY_BROKER_URL=redis://redis:6379/1
+CELERY_RESULT_BACKEND=redis://redis:6379/2
+MONGO_CLIENT=mongodb://user:password@server:port/db
+MONGO_DB=db
+JWT_TOKEN=secret_token
+REDIS_CACHE=redis_server
+REDIS_PORT=redis_port
+REDIS_DB=0
+API=
