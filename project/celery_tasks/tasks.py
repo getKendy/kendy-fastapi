@@ -8,8 +8,10 @@ import json
 import datetime
 import requests
 from binance import ThreadedWebsocketManager
-from sqlalchemy import false
+# from sqlalchemy import false
 import pandas as pd
+import pandas_ta as ta
+
 from fastapi_pagination import paginate
 from fastapi import Request
 
@@ -1066,7 +1068,7 @@ def buildIndicatorsFromCandles():
     #     return 'error'
     # filterTicker = response.json()
     # print(len(tableTickers))
-
+    print('starting calculations')
     keys = r.keys("market*")
     # print('keys:')
     # print(keys)
@@ -1075,13 +1077,14 @@ def buildIndicatorsFromCandles():
         # only btc pairs for now!!
         market = dict(json.loads(r.get(key)))
         if market["quote"] == "BTC":
-            print(market)
+            # print(market["id"])
             response = requests.get(
-                os.environ.get('API') + 'v2/ticker/' + market["id"])
+                os.environ.get('API') + 'v2/tickers/' + market["id"])
+            # print(response)
             if not response:
                 continue
             filterTicker = response.json()
-            print(len(filterTicker))
+            # print(len(filterTicker))
 
             # filterTicker = []
             # try:
@@ -1113,11 +1116,11 @@ def buildIndicatorsFromCandles():
                 lastTicker = filterTicker[-1]
                 # print(lastTicker)
                 # print(type(lastTicker))
-                if lastTicker[9] > 150:  # ! min volume > 150 BTC
+                if lastTicker['quote'] > 50:  # ! min volume > 50 BTC
                     # print(type(lastTicker))
                     # print(lastTicker.quote)
                     # df = filterTicker.to_timeseries(index="date")
-                    # print('VOLUME OK')
+                    print('VOLUME OK')
                     # print(len(filterTicker))
                     # print(lastTicker)
                     # df.ta.indicators()
@@ -1131,6 +1134,7 @@ def buildIndicatorsFromCandles():
                         mamode="sma",
                         cumulative=True,
                         append=True,
+                        fill='nearest',
                     )
                     # print(df.tail())
                     # print(df.columns)
@@ -1140,9 +1144,9 @@ def buildIndicatorsFromCandles():
                         and float(df.iloc[-1, df.columns.get_loc("BBB_20_2.0")]) >= 1.5
                     ):
                         # print(df["BBB_20_2.0"])
-                        # print(df.iloc[
-                        #         -1, df.columns.get_loc("symbol", "BBL_20_2.0", "BBL_20_2.0")
-                        #     ])
+                        print(df.iloc[
+                                -1, df.columns.get_loc("symbol", "BBL_20_2.0", "BBL_20_2.0")
+                            ])
                         # print(df.tail())
                         # Returns:   STOCH       > help(ta.stoch)
                         #     pd.DataFrame: %K, %D columns.

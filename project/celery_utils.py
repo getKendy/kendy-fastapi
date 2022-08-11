@@ -9,7 +9,7 @@ def create_celery():
     celery_app.config_from_object(settings, namespace="CELERY")
 
     celery_app.conf.task_routes = {
-        # "project.celery_tasks.tasks.buildIndicatorsFromCandles": "front",
+        "project.celery_tasks.tasks.buildIndicatorsFromCandles": "front",
         "project.celery_tasks.tasks.*": "celery"
     }
 
@@ -39,11 +39,11 @@ def create_celery():
             "schedule": crontab(minute="*/2"),
             "args": (),
         },
-        # "BuildIndicatorsFromCandles": {
-        #     "task": "project.celery_tasks.tasks.buildIndicatorsFromCandles",
-        #     "schedule": crontab(minute="*"),
-        #     "args": (),
-        # }
+        "BuildIndicatorsFromCandles": {
+            "task": "project.celery_tasks.tasks.buildIndicatorsFromCandles",
+            "schedule": crontab(minute="*"),
+            "args": (),
+        }
     }
 
     return celery_app

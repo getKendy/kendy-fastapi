@@ -79,6 +79,19 @@ async def get_ticker(symbol: str, request: Request):
             status_code=404, detail=f"ticker {symbol} not found")
     return tickers[::-1][0]
 
+@router.get('s/{symbol}', status_code=status.HTTP_200_OK, response_description="Get multiple tickers by symbol")
+async def get_ticker(symbol: str, request: Request):
+    '''Get tickers by symbol'''
+    tickers = []
+    for doc in await request.app.mongodb["tickers"].find({'symbol': symbol}).to_list(length=None):
+        tickers.append(doc)
+
+    if not tickers:
+        raise HTTPException(
+            status_code=404, detail=f"ticker {symbol} not found")
+    return tickers
+
+
 
 @router.delete("/{id}", response_description="Delete ticker")
 async def delete_ticker(id: str, request: Request):

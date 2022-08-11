@@ -37,12 +37,26 @@ services:
     image: redis:6-alpine
     restart: unless-stopped
 
-  celery_worker:
+  celery_worker1:
     build:
       context: .
       dockerfile: ./compose/local/fastapi/Dockerfile
     image: getkendy/kendy-fastapi:latest
-    command: /start-celeryworker
+    command: /start-celeryworker1
+    volumes:
+      - .:/app
+    env_file:
+      - .env/.dev-sample
+    depends_on:
+      - redis
+      - mongo
+    restart: unless-stopped
+  celery_worker2:
+    build:
+      context: .
+      dockerfile: ./compose/local/fastapi/Dockerfile
+    image: getkendy/kendy-fastapi:latest
+    command: /start-celeryworker2
     volumes:
       - .:/app
     env_file:
