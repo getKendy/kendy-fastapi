@@ -25,19 +25,20 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_description="Add new ticker")
-async def create_ticker(request: Request, ticker: TickerModel = Body(...)):
-    '''Add new ticker'''
-    ticker = jsonable_encoder(ticker)
-    new_ticker = await request.app.mongodb["tickers"].insert_one(ticker)
-    created_ticker = await request.app.mongodb["tickers"].find_one({'_id': new_ticker.inserted_id})
+# @router.post("/", response_description="Add new ticker")
+# async def create_ticker(request: Request, ticker: TickerModel = Body(...)):
+#     '''Add new ticker'''
+#     ticker = jsonable_encoder(ticker)
+#     new_ticker = await request.app.mongodb["tickers"].insert_one(ticker)
+#     created_ticker = await request.app.mongodb["tickers"].find_one({'_id': new_ticker.inserted_id})
 
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content=created_ticker["_id"])
+#     return JSONResponse(status_code=status.HTTP_201_CREATED, content=created_ticker["_id"])
 
 
 @router.post("s/", response_description="Add new tickers")
 async def create_tickers(request: Request, tickers: List[TickerModel] = Body(...)):
     '''Add new tickers'''
+    print(tickers)
     tickers = jsonable_encoder(tickers)
     await request.app.mongodb["tickers"].insert_many(tickers)
     # created_tickers = await request.app.mongodb["tickers"].find({'_id': {'$in': new_tickers.inserted_ids}})
@@ -80,7 +81,7 @@ async def get_ticker(symbol: str, request: Request):
     return tickers[::-1][0]
 
 @router.get('s/{symbol}', status_code=status.HTTP_200_OK, response_description="Get multiple tickers by symbol")
-async def get_ticker(symbol: str, request: Request):
+async def get_tickers_by_symbol(symbol: str, request: Request):
     '''Get tickers by symbol'''
     tickers = []
     for doc in await request.app.mongodb["tickers"].find({'symbol': symbol}).to_list(length=None):
