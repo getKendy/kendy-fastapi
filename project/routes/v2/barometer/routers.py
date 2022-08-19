@@ -30,7 +30,7 @@ async def create_baro(request: Request, baro: BaroModel = Body(...)):
 async def list_baros(request: Request):
     '''Get all baros'''
     baros = []
-    for doc in await request.app.mongodb["baros"].find().to_list(length=5).sort({'date'}):
+    for doc in await request.app.mongodb["baros"].find().to_list(length=None):
         baros.append(doc)
     return paginate(baros[::-1])
 

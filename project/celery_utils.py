@@ -10,7 +10,7 @@ def create_celery():
     celery_app.config_from_object(settings, namespace="CELERY")
 
     celery_app.conf.task_routes = {
-        # "project.celery_tasks.tasks.buildIndicatorsFromCandles": "front",
+        "project.celery_tasks.tasks.clean_old_tickers": "front",
         "project.celery_tasks.tasks.*": "celery"
     }
 
@@ -30,21 +30,21 @@ def create_celery():
         #     "schedule": crontab(minute="*"),
         #     "args": (),
         # },
-        # "UpdateBarometer": {
-        #     "task": "project.celery_tasks.tasks.UpdateBarometer",
-        #     "schedule": crontab(minute="*"),
-        #     "args": (),
-        # },
-        # "CleanOldTickers": {
-        #     "task": "project.celery_tasks.tasks.clean_old_tickers",
-        #     "schedule": crontab(minute="*/2"),
-        #     "args": (),
-        # },
-        # "BuildIndicatorsFromCandles": {
-        #     "task": "project.celery_tasks.tasks.buildIndicatorsFromCandles",
-        #     "schedule": crontab(minute="*"),
-        #     "args": (),
-        # }
+        "update_barometer": {
+            "task": "project.celery_tasks.tasks.update_barometer",
+            "schedule": crontab(minute="*"),
+            "args": (),
+        },
+        "clean_old_tickers": {
+            "task": "project.celery_tasks.tasks.clean_old_tickers",
+            "schedule": crontab(minute="*/2"),
+            "args": (),
+        },
+        "build_indicators_from_candles": {
+            "task": "project.celery_tasks.tasks.build_indicators_from_candles",
+            "schedule": crontab(minute="*"),
+            "args": (),
+        }
     }
 
     return celery_app

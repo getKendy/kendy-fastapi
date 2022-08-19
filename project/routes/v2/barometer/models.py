@@ -4,7 +4,6 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 
-
 class BaroModel(BaseModel):
     '''Siahost class'''
     id: str = Field(default_factory=uuid.uuid4, alias="_id")
@@ -18,6 +17,9 @@ class BaroModel(BaseModel):
     altBtcStrength: float = Field(...)
     altEthStrength: float = Field(...)
     altBnbStrength: float = Field(...)
+    btcStrength: float = Field(...)
+    ethStrength: float = Field(...)
+    bnbStrength: float = Field(...)
     total_brl_alt_volume_usdt: float = Field(...)
     total_bkrw_alt_volume_usdt: float = Field(...)
     total_aud_alt_volume_usdt: float = Field(...)
@@ -61,6 +63,9 @@ class BaroModel(BaseModel):
                 "altBtcStrength": 0.0,
                 "altEthStrength": 0.0,
                 "altBnbStrength": 0.0,
+                "btcStrength": 0.0,
+                "ethStrength": 0.0,
+                "bnbStrength": 0.0,
                 "total_brl_alt_volume_usdt": 0.0,
                 "total_bkrw_alt_volume_usdt": 0.0,
                 "total_aud_alt_volume_usdt": 0.0,
@@ -108,6 +113,9 @@ class ShowBaro(BaroModel):
                 "altBtcStrength": 0.0,
                 "altEthStrength": 0.0,
                 "altBnbStrength": 0.0,
+                "btcStrength": 0.0,
+                "ethStrength": 0.0,
+                "bnbStrength": 0.0,
                 "total_brl_alt_volume_usdt": 0.0,
                 "total_bkrw_alt_volume_usdt": 0.0,
                 "total_aud_alt_volume_usdt": 0.0,
@@ -147,7 +155,7 @@ class ShowBarosTime(BaseModel):
     class Config():
         '''Show baros time model config'''
         orm_mode = True
-        
+
 
 class BaroUpdateModel(BaseModel):
     '''Update task model'''

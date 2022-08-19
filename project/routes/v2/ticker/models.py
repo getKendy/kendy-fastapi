@@ -1,4 +1,5 @@
 # from datetime import datetime
+from datetime import datetime
 import uuid
 from typing import Optional
 from pydantic import BaseModel, Field
@@ -7,7 +8,7 @@ from pydantic import BaseModel, Field
 class TickerModel(BaseModel):
     '''Ticker class'''
     id: str = Field(default_factory=uuid.uuid4, alias="_id")
-    date: int = Field(...)
+    date: datetime = Field(...)
     symbol: str = Field(...)
     market: str = Field(...)
     close: float = Field(...)

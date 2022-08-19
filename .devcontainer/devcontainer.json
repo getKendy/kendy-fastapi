@@ -43,7 +43,8 @@
 				"ms-python.vscode-pylance",
 				"kevinrose.vsc-python-indent",
 				"himanoa.python-autopep8",
-				"njpwerner.autodocstring"
+				"njpwerner.autodocstring",
+				"mongodb.mongodb-vscode"
 			]
 		}
 	},
