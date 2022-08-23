@@ -10,7 +10,7 @@ def create_celery():
     celery_app.config_from_object(settings, namespace="CELERY")
 
     celery_app.conf.task_routes = {
-        "project.celery_tasks.tasks.clean_old_tickers": "front",
+        "project.celery_tasks.tasks.build_indicators_from_candles": "front",
         "project.celery_tasks.tasks.*": "celery"
     }
 

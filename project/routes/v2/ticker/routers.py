@@ -71,7 +71,7 @@ async def list_expired_tickers(hours: int, request: Request):
         # print(type((datetime.now() - timedelta(hours=hours)).strftime('%s')))
         if len(tickers) < 100000:
             # if float(datetime.strptime(data[x]['date'], '%Y-%m-%dT%H:%M:%S.%f%z').strftime('%s')) < float((datetime.utcnow() - timedelta(hours=hours)).strftime('%s')):
-            if parse(data[x]['date']).timestamp() < (datetime.now() - timedelta(hours=hours)).timestamp():
+            if parse(data[x]['date']).timestamp() < (datetime.now() - timedelta(minutes=hours)).timestamp():
                 # print('processing')
                 await request.app.mongodb["tickers"].delete_one({"_id": data[x]["_id"]})
                 tickers.append(data[x])

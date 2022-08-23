@@ -86,7 +86,7 @@ def save_ticker_message(tickers):
         else:
             try:
                 symbol = dict(json.loads(r.get("market" + ticker["s"])))
-            except :
+            except:
                 symbol = {"symbol": "noData"}
             # print(ticker)
             key = str(ticker["s"]).encode("UTF-8")
@@ -132,7 +132,7 @@ def save_ticker_message(tickers):
         requests.post(
             os.environ.get('API') + "v2/tickers/", json=tickers, headers=headers)
 
-            # print('saved')
+        # print('saved')
     # r.set("allTickers", str(json.dumps({"tickers": allTickers})), 86400)
     # r.set("TickerRunning", "1", 120)
 
@@ -667,7 +667,6 @@ def update_barometer(save=False):
     total_gbp_alt_volume_usdt = round(
         calculate_dollar_price(coin="GBP") * total_gbp_alt_volume, 2)
 
-
     total_btc_alt_volume_usdt = round(
         calculate_dollar_price(coin="BTC") * total_btc_alt_volume, 2
     )
@@ -1108,6 +1107,7 @@ def get_database_price_for_pair(pair):
 
 @shared_task
 def build_indicators_from_candles():
+    '''build indicators from candles'''
     # dateNow = datetime.datetime.now()
     # queryTime = datetime.datetime.now() - datetime.timedelta(minutes=30)
     # tableTickers = Tickers.objects.all().filter(date__gte=queryTime)
@@ -1131,7 +1131,7 @@ def build_indicators_from_candles():
         if market["quote"] == "BTC":
             # print(market["id"])
             response = requests.get(
-                os.environ.get('API') + 'v2/tickers/' + market["id"] )
+                os.environ.get('API') + 'v2/tickers/' + market["id"])
             # print(response)
             if not response:
                 continue
@@ -1148,37 +1148,59 @@ def build_indicators_from_candles():
             # df.to_timeseries(index='date')
             # print(df)
             if len(filterTicker) > 21:  # minimum 20 tickers to build BolingerBands
-                df = pd.DataFrame(
-                    filterTicker,
-                    columns=[
-                        "id",
-                        "date",
-                        "symbol",
-                        "market",
-                        "close",
-                        "open",
-                        "high",
-                        "low",
-                        "volume",
-                        "quote",
-                    ],
-                )
-                # print(df)
-                # print(len(filterTicker))
-                lastTicker = filterTicker[-1]
-                # print(lastTicker)
-                # print(type(lastTicker))
-                if lastTicker['quote'] > 50:  # ! min volume > 50 BTC
+                try:
+                    # print(df)
+                    # print(len(filterTicker))
+                    lastTicker = filterTicker[-1]
+                    # print(lastTicker)
+                    # print(type(lastTicker))
+                    # if lastTicker['quote'] > 50:       # ! min volume > 50 BTC   !!!! we do this in the frontend from now !!!!!
+                    # print('VOLUME OK')
+                    # print('creating dataframe')
+                    df = pd.DataFrame(
+                        filterTicker,
+                        columns=[
+                            "id",
+                            "date",
+                            "symbol",
+                            "market",
+                            "close",
+                            "open",
+                            "high",
+                            "low",
+                            "volume",
+                            "quote",
+                        ],
+                    )
+                    # print('creating DateTime')
+                    df['DateTime'] = pd.to_datetime(df['date'])
+                    # print('creating index')
+                    df = df.set_index('DateTime')
+                    # print('dropping date')
+                    df = df.drop(['date'], axis=1)
+                    # !!!! RESAMPLE TICKERS INTO USABLE TIMEFRAMES
+                    # print('resample 1m / 1T')
+                    df = df.resample('1T', label='right', closed='right').agg({
+                        'open': 'first',
+                        'high': 'max',
+                        'low': 'min',
+                        'close': 'last',
+                        'volume': 'last',
+                        'quote': 'last'
+                    })
+
                     # print(type(lastTicker))
                     # print(lastTicker.quote)
                     # df = filterTicker.to_timeseries(index="date")
-                    print('VOLUME OK')
+                    # print(df.tail())
                     # print(len(filterTicker))
                     # print(lastTicker)
                     # df.ta.indicators()
                     # help(ta.stoch)
                     # Returns:   BB          > help(ta.bbands)
                     #    pd.DataFrame: lower, mid, upper, bandwidth columns.
+                    # print('creating BB')
+
                     df.ta.bbands(
                         close=df["close"],
                         length=20,
@@ -1188,7 +1210,7 @@ def build_indicators_from_candles():
                         append=True,
                         fill='nearest',
                     )
-                    print(df.tail())
+                    # print(df.tail())
                     # print(df.columns)
                     if (
                         float(df.iloc[-1, df.columns.get_loc("close")])
@@ -1268,27 +1290,38 @@ def build_indicators_from_candles():
                                             df.columns.get_loc("STOCHd_14_3_1")], 0
                                 ),
                             }
-                            oldAlerts = r.get("alerts")
-                            # print(oldAlerts)
-                            # print(type(oldAlerts))
-                            if oldAlerts is not None:
-                                oldAlerts = json.loads(oldAlerts)
-                                print(type(oldAlerts))
-                                oldAlerts.append(data)
-                                r.set("alerts", json.dumps(oldAlerts))
-                            else:
-                                r.set("alerts", json.dumps([data]))
+                            
+                            # oldAlerts = r.get("alerts")
+                            # # print(oldAlerts)
+                            # # print(type(oldAlerts))
+                            # if oldAlerts is not None:
+                            #     oldAlerts = json.loads(oldAlerts)
+                            #     print(type(oldAlerts))
+                            #     oldAlerts.append(data)
+                            #     r.set("alerts", json.dumps(oldAlerts))
+                            # else:
+                            #     r.set("alerts", json.dumps([data]))
+                            print('!! ALERT !!')
+                            print('!! ALERT !!')
+                            print('!! ALERT !!')
+                            print({"symbol": df.iloc[-1, df.columns.get_loc("symbol")],})
+                            print('!! ALERT !!')
+                            print('!! ALERT !!')
                             print('!! ALERT !!')
                             print(data)
-                            # insertAlert(data)
-                        # else:
-                        # print('found nothing: '+ lastTicker.date.strftime('%y-%m-%d %H:%M') + '(UTC)  Price: ' +
-                        # str(df.iloc[-1, df.columns.get_loc('close')])  +
-                        # str(df.iloc[-1, df.columns.get_loc('symbol')]) + ' -> BB: ' +
-                        # str(df.iloc[-1, df.columns.get_loc('BBL_20_2.0')]) + ' Stoch: ' +
-                        # str(df.iloc[-1, df.columns.get_loc('STOCHk_14_3_1')]))
-            
-
+                                # insertAlert(data)
+                            # else:
+                            # print('found nothing: '+ lastTicker.date.strftime('%y-%m-%d %H:%M') + '(UTC)  Price: ' +
+                            # str(df.iloc[-1, df.columns.get_loc('close')])  +
+                            # str(df.iloc[-1, df.columns.get_loc('symbol')]) + ' -> BB: ' +
+                            # str(df.iloc[-1, df.columns.get_loc('BBL_20_2.0')]) + ' Stoch: ' +
+                            # str(df.iloc[-1, df.columns.get_loc('STOCHk_14_3_1')]))
+                except TypeError as error:
+                    print(error)
+                except KeyError as error:
+                    print(error)
+                
+                
 
 # @shared_task
 # def cleanAlerts():
@@ -1417,7 +1450,7 @@ def clean_old_tickers():
     # cleaning = True
     # while cleaning:
     response = requests.get(
-        os.environ.get('API') + 'v2/tickerexpired/4')
+        os.environ.get('API') + 'v2/tickerexpired/25')
     if not response:
         return 'error'
     data = response.json()
