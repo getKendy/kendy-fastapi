@@ -1,13 +1,13 @@
 '''
 baro routers
 '''
-from fastapi import APIRouter, Body, HTTPException, Request, status, Depends
+from fastapi import APIRouter, Body, HTTPException, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
-from .models import BaroModel, BaroUpdateModel, ShowBaro, ShowBarosTime
+# from project.auth import oauth2
 from fastapi_pagination import Page, paginate
-from project.auth import oauth2
 import pandas as pd
+from .models import BaroModel, BaroUpdateModel, ShowBaro, ShowBarosTime
 
 router = APIRouter(
     prefix="/api/v2/baro",
@@ -127,7 +127,7 @@ async def update_baro(id: str, request: Request, baro: BaroUpdateModel = Body(..
 
 
 @router.delete("/{id}", response_description="Delete Task")
-async def delete_baro(id: str, request: Request, current_user=Depends(oauth2.get_current_user)):
+async def delete_baro(id: str, request: Request):
     '''Delete a baro'''
     delete_result = await request.app.mongodb["baros"].delete_one({"_id": id})
 

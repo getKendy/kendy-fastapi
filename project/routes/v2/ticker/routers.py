@@ -10,7 +10,7 @@ from requests import delete
 import redis
 from datetime import timedelta, datetime
 import json
-from .models import TickerModel
+from .models import TickerModel, ShowTickerModel
 from fastapi_pagination import Page, paginate
 from project.celery_tasks import tasks
 from os import environ
@@ -48,7 +48,7 @@ async def create_tickers(request: Request, tickers: List[TickerModel] = Body(...
     return JSONResponse(status_code=status.HTTP_201_CREATED, content="created_tickers")
 
 
-@router.get("/", response_description="Get all tickers", response_model=Page[list])
+@router.get("/", response_description="Get all tickers", response_model=Page[ShowTickerModel])
 async def list_tickers(request: Request):
     '''Get all tickers'''
     tickers = []

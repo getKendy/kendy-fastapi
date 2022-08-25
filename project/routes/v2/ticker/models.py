@@ -34,3 +34,22 @@ class TickerModel(BaseModel):
                 "quote": 0.0
             }
         }
+
+class ShowTickerModel(TickerModel):
+    '''Show alert model'''
+    class Config:
+        '''Show alert model config'''
+        orm_mode = True,
+        schema_extra = {
+            "example": {
+                "date": 0,
+                "symbol": "BTCBUSD",
+                "market": "BTC/BUSD",
+                "close": 0.0,
+                "open": 0.0,
+                "high": 0.0,
+                "low": 0.0,
+                "volume": 0.0,
+                "quote": 0.0
+            }
+        }

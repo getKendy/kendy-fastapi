@@ -35,11 +35,11 @@ def create_celery():
             "schedule": crontab(minute="*"),
             "args": (),
         },
-        "clean_old_tickers": {
-            "task": "project.celery_tasks.tasks.clean_old_tickers",
-            "schedule": crontab(minute="*/2"),
-            "args": (),
-        },
+        # "clean_old_tickers": {
+        #     "task": "project.celery_tasks.tasks.clean_old_tickers",
+        #     "schedule": crontab(minute="*/2"),
+        #     "args": (),
+        # },
         "build_indicators_from_candles": {
             "task": "project.celery_tasks.tasks.build_indicators_from_candles",
             "schedule": crontab(minute="*"),
