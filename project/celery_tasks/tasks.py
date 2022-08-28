@@ -1,3 +1,4 @@
+# from binance.websocket.spot.websocket_client import SpotWebsocketClient as Client
 from celery import shared_task
 from time import time
 import os
@@ -7,7 +8,11 @@ import ccxt
 import json
 import datetime
 import requests
-from binance import ThreadedWebsocketManager
+# from binance import ThreadedWebsocketManager
+import time
+import logging
+# from binance.lib.utils import config_logging
+
 # from sqlalchemy import false
 import pandas as pd
 import pandas_ta as ta
@@ -24,7 +29,7 @@ r = redis.Redis(host=os.environ.get('REDIS_CACHE'),
 # MONGO_URL = "mongodb://ron:Oldsch00l@mongo/middleware"
 
 exchange_class = getattr(ccxt, "binance")
-binance = exchange_class(
+binanceCCXT = exchange_class(
     {
         "apiKey": "",
         "secret": "",
@@ -33,6 +38,7 @@ binance = exchange_class(
     }
 )
 
+# config_logging(logging, logging.DEBUG)
 
 # @shared_task
 # def create_task(task_type):
@@ -40,45 +46,69 @@ binance = exchange_class(
 #     return True
 
 
-@shared_task
-def start_24h_ticker():
-    '''start 24h ticker'''
-    data = r.get("TickerRunning")
-    if not data:
-        print('starting ticker')
-        twm = ThreadedWebsocketManager(api_key='', api_secret='')
-        # start is required to initialise its internal loop
-        twm.start()
+# @shared_task
+# def start_24h_ticker():
+#     '''start 24h ticker'''
+#     data = r.get("TickerRunning")
+#     if not data:
+#         print('starting ticker')
+#         # twm = ThreadedWebsocketManager(api_key='', api_secret='')
+#         # start is required to initialise its internal loop
+#         # twm.start()
 
-        def handle_ticker_message(msg):
-            save_ticker_message.delay(tickers=msg)
+#         def handle_ticker_message(message):
+#             print(message)
+#             save_ticker_message.delay(tickers=message)
 
-        # def handel_klines_message(msg):
-        #     print(msg)
+#         my_client = Client()
+#         my_client.start()
+#         my_client.rolling_window_ticker_all_symbols(
+#             "1m",
+#             id=1,
+#             callback=handle_ticker_message,
+#         )
+#         # def handel_klines_message(msg):
+#         #     print(msg)
+#         # twm.start_ticker_socket(callback=handle_ticker_message)
+#         # twm.start_miniticker_socket(
+#         # callback=handle_ticker_message, update_time=1000)
 
-        twm.start_miniticker_socket(
-            callback=handle_ticker_message, update_time=1000)
-        # twm.start_kline_socket(symbol='BNBBTC' ,interval='1m', callback=handelKlinesMessage)
-        twm.join()
-        return
-    else:
-        print('data exists')
+#         # twm.start_kline_socket(symbol='BNBBTC' ,interval='1m', callback=handelKlinesMessage)
+#         # twm.join()
+#         return
+#     # else:
+#         # print('data exists')
 
 
 @shared_task
 def update_markets():
-    '''update binance markets'''
-    markets = binance.fetch_markets()
+    '''update binanceCCXT markets'''
+    markets = binanceCCXT.fetch_markets()
     for market in markets:
         # print(json.dumps(market))
         r.set(("market" + market["id"]), str(json.dumps(market)), 86400)
+
+@shared_task
+def pre_process_tickers(tickers):
+    print(tickers)
+    print(len(tickers))
+    # try:
+    #     if tickers["result"] == 'None':
+    #         return
+    # except:
+    #     pass
+
+
 
 
 @shared_task
 def save_ticker_message(tickers):
     '''save tickers'''
+    # print(tickers)
     all_tickers = []
     for ticker in tickers:
+        print(ticker)
+        print(type(ticker))
         if ticker["e"] == "error":
             import logging
 
@@ -98,12 +128,12 @@ def save_ticker_message(tickers):
                         {
                             "symbol": ticker["s"],
                             "market": symbol["symbol"],
-                            "c": ticker["c"],
-                            "o": ticker["o"],
-                            "h": ticker["h"],
-                            "l": ticker["l"],
-                            "v": ticker["v"],
-                            "q": ticker["q"],
+                            "c": ticker['k']["c"],
+                            "o": ticker['k']["o"],
+                            "h": ticker['k']["h"],
+                            "l": ticker['k']["l"],
+                            "v": ticker['k']["v"],
+                            "q": ticker['k']["q"],
                         }
                     )
                 ),
@@ -114,12 +144,12 @@ def save_ticker_message(tickers):
                     "date": ticker["E"],
                     "symbol": ticker["s"],
                     "market": symbol["symbol"],
-                    "close": ticker["c"],
-                    "open": ticker["o"],
-                    "high": ticker["h"],
-                    "low": ticker["l"],
-                    "volume": ticker["v"],
-                    "quote": ticker["q"],
+                    "close": ticker['k']["c"],
+                    "open": ticker['k']["o"],
+                    "high": ticker['k']["h"],
+                    "low": ticker['k']["l"],
+                    "volume": ticker['k']["v"],
+                    "quote": ticker['k']["q"],
                 }
             )
     # enf for loop
@@ -334,7 +364,7 @@ def update_barometer(save=False):
         #     bvnd_markets.append(market)
         # if market["quote"] == "GYEN":
         #     gyen_markets.append(market)
-        
+
         # if market["quote"] == "UST":
         #     ust_markets.append(market)
         # if market["quote"] == "PAX":
@@ -363,7 +393,6 @@ def update_barometer(save=False):
             else:
                 pass
                 # usdt_markets.append(market)
-                
 
         if market["quote"] == "TUSD":
             if market["base"] == "BTC":
@@ -971,7 +1000,7 @@ def get_database_price_for_pair(pair):
 # # def GetBalances():
 # #     balances = []
 # #     # try:
-# #     balance = binance.fetch_balance()
+# #     balance = binanceCCXT.fetch_balance()
 # #     # connect(host=MONGO_URL)
 # #     # print(balance)
 # #     # btcUsdtPrice = calculate_dollar_price("BTC")
@@ -1134,7 +1163,8 @@ def build_indicators_from_candles():
     for key in keys:
         # only btc pairs for now!!
         market = dict(json.loads(r.get(key)))
-        if market["quote"] == "BTC":
+        # print(market)
+        if market["quote"] == "BTC" and market["base"] == 'ETH':
             # print(market["id"])
             response = requests.get(
                 os.environ.get('API') + 'v2/tickers/' + market["id"])
@@ -1178,6 +1208,7 @@ def build_indicators_from_candles():
                             "quote",
                         ],
                     )
+                    print(df['close'])
                     # print('creating DateTime')
                     df['DateTime'] = pd.to_datetime(df['date'])
                     # print('creating index')
@@ -1216,7 +1247,7 @@ def build_indicators_from_candles():
                         append=True,
                         fill='nearest',
                     )
-                    # print(df.tail())
+                    print(df.tail())
                     # print(df.columns)
                     if (
                         float(df.iloc[-1, df.columns.get_loc("close")])
@@ -1296,7 +1327,7 @@ def build_indicators_from_candles():
                                             df.columns.get_loc("STOCHd_14_3_1")], 0
                                 ),
                             }
-                            
+
                             # oldAlerts = r.get("alerts")
                             # # print(oldAlerts)
                             # # print(type(oldAlerts))
@@ -1310,7 +1341,8 @@ def build_indicators_from_candles():
                             print('!! ALERT !!')
                             print('!! ALERT !!')
                             print('!! ALERT !!')
-                            print({"symbol": df.iloc[-1, df.columns.get_loc("symbol")],})
+                            print(
+                                {"symbol": df.iloc[-1, df.columns.get_loc("symbol")], })
                             print('!! ALERT !!')
                             print('!! ALERT !!')
                             print('!! ALERT !!')
@@ -1324,9 +1356,9 @@ def build_indicators_from_candles():
 
                             #     # print(data1Test)
                             requests.post(os.environ.get('API') + "v2/alert/",
-                                json=data, headers=headers)
+                                          json=data, headers=headers)
                             print(data)
-                                # insertAlert(data)
+                            # insertAlert(data)
                             # else:
                             # print('found nothing: '+ lastTicker.date.strftime('%y-%m-%d %H:%M') + '(UTC)  Price: ' +
                             # str(df.iloc[-1, df.columns.get_loc('close')])  +
@@ -1337,8 +1369,7 @@ def build_indicators_from_candles():
                     print(error)
                 except KeyError as error:
                     print(error)
-                
-                
+
 
 # @shared_task
 # def cleanAlerts():
@@ -1348,7 +1379,7 @@ def build_indicators_from_candles():
 # # @shared_task
 # # def updateOpenorders():
 # #     # import logging
-# #     # logging.info(BinancePairs)
+# #     # logging.info(binanceCCXTPairs)
 # #     balances = dict(json.loads(r.get("balances")))
 # #     # print(balances)
 # #     allOrders = []
@@ -1362,7 +1393,7 @@ def build_indicators_from_candles():
 # #                 for pair in pairs:
 # #                     print(pair)
 # #                     # logging.info(pair)
-# #                     orders = binance.fetch_open_orders(pair)
+# #                     orders = binanceCCXT.fetch_open_orders(pair)
 # #                     print(orders)
 # #                     # print(type(orders))
 # #                     for order in orders:
@@ -1446,7 +1477,7 @@ def build_indicators_from_candles():
 
 # @shared_task
 # def get_balance(apikey, apisecret):
-#     binance = exchange_class(
+#     binanceCCXT = exchange_class(
 #         {
 #             "apiKey": apikey,
 #             "secret": apisecret,
@@ -1454,7 +1485,7 @@ def build_indicators_from_candles():
 #             "enableRateLimit": True,
 #         }
 #     )
-#     balances = binance.fetch_balance()
+#     balances = binanceCCXT.fetch_balance()
 #     print(balances)
 #     return balances
 

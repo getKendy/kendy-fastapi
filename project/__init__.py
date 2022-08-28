@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from project.celery_utils import create_celery
+# from project.celery_utils import create_celery
 from fastapi_pagination import add_pagination
 from motor.motor_asyncio import AsyncIOMotorClient
 from os import environ
@@ -17,7 +17,9 @@ def create_app() -> FastAPI:
     app = FastAPI()
 
     # Celery before routes!
-    app.celery_app = create_celery()
+    # app.celery_app = create_celery()
+    
+    
     # Routers
 
     # app.include_router(user_router.router)

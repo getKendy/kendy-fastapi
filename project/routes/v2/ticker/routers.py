@@ -61,7 +61,7 @@ async def list_tickers(request: Request):
 async def list_expired_tickers(hours: int, request: Request):
     '''Remove all expired tickers'''
     tickers = []
-    data = await request.app.mongodb["tickers"].find().to_list(length=None)
+    data = await request.app.mongodb["tickers"].find().to_list(length=10000)
     # FIX ?
     # compare_date = 'Fri, 31 Jan 2020 09:59:34 +0000 (UTC)'
     # datetime.now().timestamp() > parse(compare_date).timestamp()
@@ -69,9 +69,9 @@ async def list_expired_tickers(hours: int, request: Request):
         # print(type(datetime.strptime(data[x]['date'],
         #   '%Y-%m-%dT%H:%M:%S.%f%z').strftime('%s')))
         # print(type((datetime.now() - timedelta(hours=hours)).strftime('%s')))
-        if len(tickers) < 100000:
+        if len(tickers) < 10000:
             # if float(datetime.strptime(data[x]['date'], '%Y-%m-%dT%H:%M:%S.%f%z').strftime('%s')) < float((datetime.utcnow() - timedelta(hours=hours)).strftime('%s')):
-            if parse(data[x]['date']).timestamp() < (datetime.now() - timedelta(minutes=hours)).timestamp():
+            if parse(data[x]['date']).timestamp() < (datetime.now() - timedelta(hours=hours)).timestamp():
                 # print('processing')
                 await request.app.mongodb["tickers"].delete_one({"_id": data[x]["_id"]})
                 tickers.append(data[x])
@@ -114,22 +114,22 @@ async def delete_ticker(id: str, request: Request):
     raise HTTPException(status_code=404, detail=f"ticker {id} not found")
 
 
-@router.get('redis/', status_code=status.HTTP_200_OK)
-def get_redis():
+@router.get('redis/{symbol}', status_code=status.HTTP_200_OK)
+def get_redis(symbol:str):
     '''Get redis'''
     try:
-        data = dict(json.loads(r.get("allTickers")))
+        data = dict(json.loads(r.get(symbol)))
     except TypeError:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="No tickers found")
     if not data:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="No tickers found")
-    tickers = []
-    for d in data['tickers']:
-        # print(d)
-        tickers.append(
-            {'symbol': d['symbol'], 'market': d['market'], 'close': d['c'],
-                'high': d['h'], 'low': d['l'], 'open': d['o'], 'volume': d['v'], 'quote': d['q']}
-        )
-    return tickers
+    # tickers = []
+    # for d in data['tickers']:
+    #     # print(d)
+    #     tickers.append(
+    #         {'symbol': d['symbol'], 'market': d['market'], 'close': d['c'],
+    #             'high': d['h'], 'low': d['l'], 'open': d['o'], 'volume': d['v'], 'quote': d['q']}
+    #     )
+    return data
