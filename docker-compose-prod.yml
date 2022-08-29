@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: ./compose/production/fastapi/Dockerfile
+    image: back2basic/kendy-fastapi
     # '/start' is the shell script used to run the service
     # command: /start
     # this volume is used to map the files and folders on the host to the container
