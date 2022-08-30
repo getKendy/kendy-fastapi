@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 class AlertModel(BaseModel):
     '''AlertModel class'''
     id: str = Field(default_factory=uuid.uuid4, alias="_id")
+    timeframe: str = Field(...)
     symbol: str = Field(...)
     market: str = Field(...)
     close: float = Field(...)
@@ -26,6 +27,7 @@ class AlertModel(BaseModel):
         allow_population_by_field_name = True
         schema_extra = {
             "example": {
+                'timeframe': '',
                 'symbol': '',
                 'market': '',
                 'close': '',
@@ -50,6 +52,7 @@ class ShowAlert(AlertModel):
         orm_mode = True,
         schema_extra = {
             "example": {
+                'timeframe':'',
                 'symbol': '',
                 'market': '',
                 'close': '',
