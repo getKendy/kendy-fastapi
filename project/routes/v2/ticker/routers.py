@@ -1,7 +1,7 @@
 '''
 ticker routers
 '''
-from ast import Try
+
 from typing import List
 from fastapi import APIRouter, Body, HTTPException, Request, status
 from fastapi.encoders import jsonable_encoder
