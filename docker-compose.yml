@@ -37,66 +37,66 @@ services:
     image: redis:6-alpine
     restart: unless-stopped
 
-  celery_worker1:
-    build:
-      context: .
-      dockerfile: ./compose/local/fastapi/Dockerfile
-    image: getkendy/kendy-fastapi:latest
-    command: /start-celeryworker1
-    volumes:
-      - .:/app
-    env_file:
-      - .env/.dev-sample
-    depends_on:
-      - redis
-      - mongo
-    restart: unless-stopped
-  celery_worker2:
-    build:
-      context: .
-      dockerfile: ./compose/local/fastapi/Dockerfile
-    image: getkendy/kendy-fastapi:latest
-    command: /start-celeryworker2
-    volumes:
-      - .:/app
-    env_file:
-      - .env/.dev-sample
-    depends_on:
-      - redis
-      - mongo
-    restart: unless-stopped
+  # celery_worker1:
+  #   build:
+  #     context: .
+  #     dockerfile: ./compose/local/fastapi/Dockerfile
+  #   image: getkendy/kendy-fastapi:latest
+  #   command: /start-celeryworker1
+  #   volumes:
+  #     - .:/app
+  #   env_file:
+  #     - .env/.dev-sample
+  #   depends_on:
+  #     - redis
+  #     - mongo
+  #   restart: unless-stopped
+  # celery_worker2:
+  #   build:
+  #     context: .
+  #     dockerfile: ./compose/local/fastapi/Dockerfile
+  #   image: getkendy/kendy-fastapi:latest
+  #   command: /start-celeryworker2
+  #   volumes:
+  #     - .:/app
+  #   env_file:
+  #     - .env/.dev-sample
+  #   depends_on:
+  #     - redis
+  #     - mongo
+  #   restart: unless-stopped
 
-  celery_beat:
-    build:
-      context: .
-      dockerfile: ./compose/local/fastapi/Dockerfile
-    image: getkendy/kendy-fastapi:latest
-    command: /start-celerybeat
-    volumes:
-      - .:/app
-    env_file:
-      - .env/.dev-sample
-    depends_on:
-      - redis
-      - mongo
-    restart: unless-stopped
+  # celery_beat:
+  #   build:
+  #     context: .
+  #     dockerfile: ./compose/local/fastapi/Dockerfile
+  #   image: getkendy/kendy-fastapi:latest
+  #   command: /start-celerybeat
+  #   volumes:
+  #     - .:/app
+  #   env_file:
+  #     - .env/.dev-sample
+  #   depends_on:
+  #     - redis
+  #     - mongo
+  #   restart: unless-stopped
 
-  flower:
-    build:
-      context: .
-      dockerfile: ./compose/local/fastapi/Dockerfile
-    image: getkendy/kendy-fastapi:latest
-    command: /start-flower
-    volumes:
-      - .:/app
-    env_file:
-      - .env/.dev-sample
-    ports:
-      - 5555:5555
-    depends_on:
-      - redis
-      - mongo
-    restart: unless-stopped
+  # flower:
+  #   build:
+  #     context: .
+  #     dockerfile: ./compose/local/fastapi/Dockerfile
+  #   image: getkendy/kendy-fastapi:latest
+  #   command: /start-flower
+  #   volumes:
+  #     - .:/app
+  #   env_file:
+  #     - .env/.dev-sample
+  #   ports:
+  #     - 5555:5555
+  #   depends_on:
+  #     - redis
+  #     - mongo
+  #   restart: unless-stopped
 
 volumes:
   mongo_data:

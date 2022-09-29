@@ -7,11 +7,12 @@ from pydantic import BaseModel, Field
 class SettingModel(BaseModel):
     '''setting class'''
     id: str = Field(default_factory=uuid.uuid4, alias="_id")
-    userid: str = Field(...)
+    username: str = Field(...)
     apikey: str = Field(...)
     apisecret: str = Field(...)
-    date: datetime = Field(default_factory=datetime.now)
-
+    createdAt: datetime = Field(...)
+    modified: datetime = Field(...)
+    
     class Config:
         '''setting model config'''
         allow_population_by_field_name = True
@@ -44,7 +45,7 @@ class SettingUpdateModel(BaseModel):
     userid: Optional[str]
     apikey: Optional[str]
     apisecret: Optional[str]
-    date: Optional[datetime]
+    modified: Optional[datetime]
 
     class Config:
         '''Update setting model config'''

@@ -10,8 +10,8 @@ from project.routes.v2.users import routers as user_router
 from project.routes.v2.settings import routers as settings_router
 from project.routes.v2.balance import routers as balance_router
 from project.routes.v2.alert import routers as alert_router
-from project.auth import authentication as auth_router
-
+# from project.auth import authentication as auth_router
+# from project.routes.ws import routers as webSocket_router
 
 def create_app() -> FastAPI:
     app = FastAPI()
@@ -24,13 +24,13 @@ def create_app() -> FastAPI:
 
     # app.include_router(user_router.router)
     # app.include_router(auth_router.router)
-    # app.include_router(settings_router.router)
+    app.include_router(settings_router.router)
     app.include_router(task.router)
     app.include_router(ticker_router.router)
     app.include_router(baro_router.router)
     # app.include_router(balance_router.router)fastapifast
     app.include_router(alert_router.router)
-
+    # app.include_router(webSocket_router.router)
     add_pagination(app)
 
     @app.on_event("startup")
