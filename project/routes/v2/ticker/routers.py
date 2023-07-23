@@ -49,10 +49,10 @@ async def create_tickers(request: Request, tickers: List[TickerModel] = Body(...
 
 
 @router.get("/", response_description="Get all tickers", response_model=Page[ShowTickerModel])
-async def list_tickers(request: Request):
+async def list_tickers(exchange: str, request: Request):
     '''Get all tickers'''
     tickers = []
-    for doc in await request.app.mongodb["tickers"].find().to_list(length=None):
+    for doc in await request.app.mongodb["tickers"].find({'exchange': exchange}).to_list(length=None):
         tickers.append(doc)
     return paginate(tickers)
 
@@ -79,10 +79,10 @@ async def list_expired_tickers(hours: int, request: Request):
 
 
 @router.get('/{symbol}', status_code=status.HTTP_200_OK, response_description="Get ticker by symbol", response_model=TickerModel)
-async def get_ticker(symbol: str, request: Request):
+async def get_ticker(symbol: str, exchange: str, request: Request):
     '''Get ticker by symbol'''
     tickers = []
-    for doc in await request.app.mongodb["tickers"].find({'symbol': symbol}).to_list(length=None):
+    for doc in await request.app.mongodb["tickers"].find({'symbol': symbol, 'exchange': exchange}).to_list(length=None):
         tickers.append(doc)
 
     if not tickers:
@@ -92,10 +92,10 @@ async def get_ticker(symbol: str, request: Request):
 
 
 @router.get('s/{symbol}', status_code=status.HTTP_200_OK, response_description="Get multiple tickers by symbol")
-async def get_tickers_by_symbol(symbol: str, request: Request):
+async def get_tickers_by_symbol(symbol: str, exchange: str, request: Request):
     '''Get tickers by symbol'''
     tickers = []
-    for doc in await request.app.mongodb["tickers"].find({'symbol': symbol}).to_list(length=None):
+    for doc in await request.app.mongodb["tickers"].find({'symbol': symbol, 'exchange': exchange}).to_list(length=None):
         tickers.append(doc)
 
     if not tickers:

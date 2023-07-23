@@ -8,6 +8,7 @@ class AlertModel(BaseModel):
     '''AlertModel class'''
     id: str = Field(default_factory=uuid.uuid4, alias="_id")
     timeframe: str = Field(...)
+    exchange: str = Field(...)
     symbol: str = Field(...)
     market: str = Field(...)
     close: float = Field(...)
@@ -28,6 +29,7 @@ class AlertModel(BaseModel):
         schema_extra = {
             "example": {
                 'timeframe': '',
+                'exchange': '',
                 'symbol': '',
                 'market': '',
                 'close': '',
@@ -53,6 +55,7 @@ class ShowAlert(AlertModel):
         schema_extra = {
             "example": {
                 'timeframe':'',
+                'exchange': '',
                 'symbol': '',
                 'market': '',
                 'close': '',

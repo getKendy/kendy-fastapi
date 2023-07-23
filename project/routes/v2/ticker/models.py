@@ -9,6 +9,7 @@ class TickerModel(BaseModel):
     '''Ticker class'''
     id: str = Field(default_factory=uuid.uuid4, alias="_id")
     date: datetime = Field(...)
+    exchange: str = Field(...)
     symbol: str = Field(...)
     market: str = Field(...)
     close: float = Field(...)
@@ -24,6 +25,7 @@ class TickerModel(BaseModel):
         schema_extra = {
             "example": {
                 "date": 0,
+                "exchange": "binance",
                 "symbol": "BTCBUSD",
                 "market": "BTC/BUSD",
                 "close": 0.0,
@@ -43,6 +45,7 @@ class ShowTickerModel(TickerModel):
         schema_extra = {
             "example": {
                 "date": 0,
+                "exchange": "binance",
                 "symbol": "BTCBUSD",
                 "market": "BTC/BUSD",
                 "close": 0.0,
