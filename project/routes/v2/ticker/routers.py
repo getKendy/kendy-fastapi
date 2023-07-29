@@ -17,9 +17,13 @@ from os import environ
 from dateutil.parser import parse
 
 # r = redis.Redis(host="redis", port=6379, db=0)
-r = redis.Redis(host=environ.get('REDIS_CACHE'),
+binanceRedis = redis.Redis(host=environ.get('REDIS_CACHE'),
                 port=environ.get('REDIS_PORT'),
-                db=environ.get('REDIS_DB'))
+                db=environ.get('REDIS_DB_BINANCE'))
+
+kucoinRedis = redis.Redis(host=environ.get('REDIS_CACHE'),
+                port=environ.get('REDIS_PORT'),
+                db=environ.get('REDIS_DB_KUCOIN'))
 
 router = APIRouter(
     prefix="/api/v2/ticker",
@@ -115,10 +119,13 @@ async def delete_ticker(id: str, request: Request):
 
 
 @router.get('redis/{symbol}', status_code=status.HTTP_200_OK)
-def get_redis(symbol:str):
+def get_redis(symbol:str, exchange: str):
     '''Get redis'''
     try:
-        data = dict(json.loads(r.get(symbol)))
+        if exchange == 'binance':
+            data = dict(json.loads(binanceRedis.get(symbol)))
+        elif exchange == 'kucoin':
+            data = dict(json.loads(kucoinRedis.get(symbol)))
     except TypeError:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="No tickers found")
