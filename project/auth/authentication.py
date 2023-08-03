@@ -41,12 +41,12 @@ router = APIRouter(
 
 
 @router.post('/')
-async def login(request: Request, form_data: LoginModel = Body(...)):
-# async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
+# async def login(request: Request, form_data: LoginModel = Body(...)):
+async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
     '''Login user'''
     # user = jsonable_encoder(user)
     # print(form_data)
-    user =  await request.app.mongodb["users"].find_one({'email': form_data.username})
+    user =  await request.app.mongodb["users"].find_one({'name': form_data.username})
 
     # user = db.query(models.User).filter(
     #     models.User.email == request.username).first()

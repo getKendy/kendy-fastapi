@@ -11,6 +11,7 @@ class UserModel(BaseModel):
     name: str = Field(...)
     email: str = Field(...)
     password: str = Field(...)
+    # disabled: bool = Field(...)
 
     class Config:
         '''User model config'''
@@ -21,6 +22,7 @@ class UserModel(BaseModel):
                 "name": "",
                 "email": "",
                 "password": '',
+                # "disabled": False,
             }
         }
 
@@ -31,6 +33,7 @@ class UserMeModel(BaseModel):
     date: datetime
     name: str
     email: str
+    # disabled: bool
     # password: str = Field(...)
 
     class Config:

@@ -5,10 +5,12 @@ from fastapi import APIRouter, Body, HTTPException, Request, status, Depends
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
-from project.auth import oauth2
 from .models import SettingModel, SettingUpdateModel, ShowSetting
 from fastapi_pagination import Page, paginate
 import pandas as pd
+from project.auth import oauth2
+from typing import Annotated
+from ..users.models import UserMeModel
 
 router = APIRouter(
     prefix="/api/v2/settings",
@@ -17,7 +19,7 @@ router = APIRouter(
 
 
 @router.post("/", response_description="Add new setting")
-async def create_setting(request: Request, setting: SettingModel = Body(...)):
+async def create_setting(request: Request, current_user: Annotated[UserMeModel, Depends(oauth2.get_current_user)], setting: SettingModel = Body(...)):
     '''Add new setting'''
     # print(setting)
     setting = jsonable_encoder(setting)
@@ -37,7 +39,7 @@ async def create_setting(request: Request, setting: SettingModel = Body(...)):
 
 
 @router.get("/", response_description="Get setting by email")
-async def show_setting(username: str ,request: Request):
+async def show_setting(username: str ,request: Request, current_user: Annotated[UserMeModel, Depends(oauth2.get_current_user)]):
     '''Get setting by id and userid'''
     if (setting := await request.app.mongodb["settings"].find_one({"username": username})) is not None:
         return setting
@@ -46,7 +48,7 @@ async def show_setting(username: str ,request: Request):
 
 
 @router.put("/{id}", response_description="Update a task")
-async def update_setting(id: str, request: Request, setting: SettingUpdateModel = Body(...)):
+async def update_setting(id: str, request: Request, current_user: Annotated[UserMeModel, Depends(oauth2.get_current_user)], setting: SettingUpdateModel = Body(...)):
     '''Update a setting'''
     setting = {k: v for k, v in setting.dict().items() if v is not None}
 
@@ -70,7 +72,7 @@ async def update_setting(id: str, request: Request, setting: SettingUpdateModel 
 
 
 @router.delete("/{id}", response_description="Delete Task")
-async def delete_setting(id: str, request: Request):
+async def delete_setting(id: str, request: Request, current_user: Annotated[UserMeModel, Depends(oauth2.get_current_user)]):
     '''Delete a setting'''
     delete_result = await request.app.mongodb["settings"].delete_one({"_id": id})
 

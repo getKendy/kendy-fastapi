@@ -1,42 +1,42 @@
 # from binance.websocket.spot.websocket_client import SpotWebsocketClient as Client
-from celery import shared_task
-from time import time
-import os
-import time
-import redis
-import ccxt
-import json
-import datetime
-import requests
+# from celery import shared_task
+# from time import time
+# import os
+# import time
+# import redis
+# import ccxt
+# import json
+# import datetime
+# import requests
 # from binance import ThreadedWebsocketManager
-import time
-import logging
+# import time
+# import logging
 # from binance.lib.utils import config_logging
 
 # from sqlalchemy import false
-import pandas as pd
-import pandas_ta as ta
+# import pandas as pd
+# import pandas_ta as ta
 
-from fastapi_pagination import paginate
-from fastapi import Request
+# from fastapi_pagination import paginate
+# from fastapi import Request
 
 # from ..ticker24h import main as ticker_main
 # from .. import models
 
-r = redis.Redis(host=os.environ.get('REDIS_CACHE'),
-                port=os.environ.get('REDIS_PORT'),
-                db=os.environ.get('REDIS_DB'))
+# r = redis.Redis(host=os.environ.get('REDIS_CACHE'),
+#                 port=os.environ.get('REDIS_PORT'),
+#                 db=os.environ.get('REDIS_DB'))
 # MONGO_URL = "mongodb://ron:Oldsch00l@mongo/middleware"
 
-exchange_class = getattr(ccxt, "binance")
-binanceCCXT = exchange_class(
-    {
-        "apiKey": "",
-        "secret": "",
-        "timeout": 2400000,
-        "enableRateLimit": True,
-    }
-)
+# exchange_class = getattr(ccxt, "binance")
+# binanceCCXT = exchange_class(
+#     {
+#         "apiKey": "",
+#         "secret": "",
+#         "timeout": 2400000,
+#         "enableRateLimit": True,
+#     }
+# )
 
 # config_logging(logging, logging.DEBUG)
 
@@ -80,91 +80,91 @@ binanceCCXT = exchange_class(
 #         # print('data exists')
 
 
-@shared_task
-def update_markets():
-    '''update binanceCCXT markets'''
-    markets = binanceCCXT.fetch_markets()
-    for market in markets:
-        # print(json.dumps(market))
-        r.set(("market" + market["id"]), str(json.dumps(market)), 86400)
+# @shared_task
+# def update_markets():
+#     '''update binanceCCXT markets'''
+#     markets = binanceCCXT.fetch_markets()
+#     for market in markets:
+#         # print(json.dumps(market))
+#         r.set(("market" + market["id"]), str(json.dumps(market)), 86400)
 
-@shared_task
-def pre_process_tickers(tickers):
-    print(tickers)
-    print(len(tickers))
-    # try:
-    #     if tickers["result"] == 'None':
-    #         return
-    # except:
-    #     pass
-
-
+# @shared_task
+# def pre_process_tickers(tickers):
+#     print(tickers)
+#     print(len(tickers))
+#     # try:
+#     #     if tickers["result"] == 'None':
+#     #         return
+#     # except:
+#     #     pass
 
 
-@shared_task
-def save_ticker_message(tickers):
-    '''save tickers'''
-    # print(tickers)
-    all_tickers = []
-    for ticker in tickers:
-        print(ticker)
-        print(type(ticker))
-        if ticker["e"] == "error":
-            import logging
 
-            logging.info(ticker)
-        else:
-            try:
-                symbol = dict(json.loads(r.get("market" + ticker["s"])))
-            except:
-                symbol = {"symbol": "noData"}
-            # print(ticker)
-            key = str(ticker["s"]).encode("UTF-8")
-            # print(key)
-            r.set(
-                key,
-                str(
-                    json.dumps(
-                        {
-                            "symbol": ticker["s"],
-                            "market": symbol["symbol"],
-                            "c": ticker['k']["c"],
-                            "o": ticker['k']["o"],
-                            "h": ticker['k']["h"],
-                            "l": ticker['k']["l"],
-                            "v": ticker['k']["v"],
-                            "q": ticker['k']["q"],
-                        }
-                    )
-                ),
-                60,
-            )
-            all_tickers.append(
-                {
-                    "date": ticker["E"],
-                    "symbol": ticker["s"],
-                    "market": symbol["symbol"],
-                    "close": ticker['k']["c"],
-                    "open": ticker['k']["o"],
-                    "high": ticker['k']["h"],
-                    "low": ticker['k']["l"],
-                    "volume": ticker['k']["v"],
-                    "quote": ticker['k']["q"],
-                }
-            )
-    # enf for loop
-    headers = {
-        "Content-Type": "application/json",
-        "accept": "application/json"
-    }
-    tickers = all_tickers
-    if len(all_tickers) >= 1:
-        requests.post(
-            os.environ.get('API') + "v2/tickers/", json=tickers, headers=headers)
 
-        # print('saved')
-    # r.set("allTickers", str(json.dumps({"tickers": allTickers})), 86400)
-    # r.set("TickerRunning", "1", 120)
+# @shared_task
+# def save_ticker_message(tickers):
+#     '''save tickers'''
+#     # print(tickers)
+#     all_tickers = []
+#     for ticker in tickers:
+#         print(ticker)
+#         print(type(ticker))
+#         if ticker["e"] == "error":
+#             import logging
+
+#             logging.info(ticker)
+#         else:
+#             try:
+#                 symbol = dict(json.loads(r.get("market" + ticker["s"])))
+#             except:
+#                 symbol = {"symbol": "noData"}
+#             # print(ticker)
+#             key = str(ticker["s"]).encode("UTF-8")
+#             # print(key)
+#             r.set(
+#                 key,
+#                 str(
+#                     json.dumps(
+#                         {
+#                             "symbol": ticker["s"],
+#                             "market": symbol["symbol"],
+#                             "c": ticker['k']["c"],
+#                             "o": ticker['k']["o"],
+#                             "h": ticker['k']["h"],
+#                             "l": ticker['k']["l"],
+#                             "v": ticker['k']["v"],
+#                             "q": ticker['k']["q"],
+#                         }
+#                     )
+#                 ),
+#                 60,
+#             )
+#             all_tickers.append(
+#                 {
+#                     "date": ticker["E"],
+#                     "symbol": ticker["s"],
+#                     "market": symbol["symbol"],
+#                     "close": ticker['k']["c"],
+#                     "open": ticker['k']["o"],
+#                     "high": ticker['k']["h"],
+#                     "low": ticker['k']["l"],
+#                     "volume": ticker['k']["v"],
+#                     "quote": ticker['k']["q"],
+#                 }
+#             )
+#     # enf for loop
+#     headers = {
+#         "Content-Type": "application/json",
+#         "accept": "application/json"
+#     }
+#     tickers = all_tickers
+#     if len(all_tickers) >= 1:
+#         requests.post(
+#             os.environ.get('API') + "v2/tickers/", json=tickers, headers=headers)
+
+#         # print('saved')
+#     # r.set("allTickers", str(json.dumps({"tickers": allTickers})), 86400)
+#     # r.set("TickerRunning", "1", 120)
 
 
 # @shared_task
@@ -273,617 +273,574 @@ def save_ticker_message(tickers):
 #         os.environ.get('API') + "v2/ticker/", json=data, headers=headers)
 
 
-@shared_task
-def update_barometer(save=False):
-    '''update barometer'''
-    # if save:
-    #     storeTickersToDatabase.delay()
-    # try:
-    # print(get_connection())
-    # dateNow = datetime.datetime.now()
-    # brl_markets = []
-    # bkrw_markets = []
-    # aud_markets = []
-    # doge_markets = []
-    # eur_markets = []
-    # busd_markets = []
-    # usdc_markets = []
-    # rub_markets = []
-    # usdp_markets = []
-    # gbp_markets = []
-    # trx_markets = []
-    # zar_markets = []
-    # bidr_markets = []
-    # usds_markets = []
-    # try_markets = []
-    # ngn_markets = []
-    # xrp_markets = []
-    # uah_markets = []
-    # bvnd_markets = []
-    # gyen_markets = []
-    # ust_markets = []
-    # pax_markets = []
-    # idrt_markets = []
-    # dot_markets = []
-    # vai_markets = []
-    # dai_markets = []
-    # usdt_markets = []
-    # tusd_markets = []
-    btc_markets = []
-    eth_markets = []
-    bnb_markets = []
-    fiat_btc_markets = []
-    fiat_eth_markets = []
-    fiat_bnb_markets = []
+# @shared_task
+# def update_barometer(save=False):
+#     '''update barometer'''
+#     # if save:
+#     #     storeTickersToDatabase.delay()
+#     # try:
+#     # print(get_connection())
+#     # dateNow = datetime.datetime.now()
+#     # brl_markets = []
+#     # bkrw_markets = []
+#     # aud_markets = []
+#     # doge_markets = []
+#     # eur_markets = []
+#     # busd_markets = []
+#     # usdc_markets = []
+#     # rub_markets = []
+#     # usdp_markets = []
+#     # gbp_markets = []
+#     # trx_markets = []
+#     # zar_markets = []
+#     # bidr_markets = []
+#     # usds_markets = []
+#     # try_markets = []
+#     # ngn_markets = []
+#     # xrp_markets = []
+#     # uah_markets = []
+#     # bvnd_markets = []
+#     # gyen_markets = []
+#     # ust_markets = []
+#     # pax_markets = []
+#     # idrt_markets = []
+#     # dot_markets = []
+#     # vai_markets = []
+#     # dai_markets = []
+#     # usdt_markets = []
+#     # tusd_markets = []
+#     btc_markets = []
+#     eth_markets = []
+#     bnb_markets = []
+#     fiat_btc_markets = []
+#     fiat_eth_markets = []
+#     fiat_bnb_markets = []
 
-    keys = r.keys("market*")
-    quotePairs = []
-    basePairs = ['BRL', 'BKRW', 'AUD', 'DOGE', 'EUR', 'BNB', 'BUSD', 'USDC', 'RUB', 'USDP', 'GBP', 'TRX', 'ZAR', 'BIDR', 'USDS',
-                 'TRY', 'NGN', 'XRP', 'UAH', 'BVND', 'GYEN', 'ETH', 'UST', 'PAX', 'IDRT', 'DOT', 'VAI', 'DAI', 'BTC', 'USDT', 'TUSD']
-    newPairs = []
-    for key in keys:
-        market = dict(json.loads(r.get(key)))
-        quotePairs.append(market["quote"])
+#     keys = r.keys("market*")
+#     quotePairs = []
+#     basePairs = ['BRL', 'BKRW', 'AUD', 'DOGE', 'EUR', 'BNB', 'BUSD', 'USDC', 'RUB', 'USDP', 'GBP', 'TRX', 'ZAR', 'BIDR', 'USDS',
+#                  'TRY', 'NGN', 'XRP', 'UAH', 'BVND', 'GYEN', 'ETH', 'UST', 'PAX', 'IDRT', 'DOT', 'VAI', 'DAI', 'BTC', 'USDT', 'TUSD']
+#     newPairs = []
+#     for key in keys:
+#         market = dict(json.loads(r.get(key)))
+#         quotePairs.append(market["quote"])
 
-        # print(market)
-        # print(type(market))
-        # if market["quote"] == "BRL":
-        #     brl_markets.append(market)
-        # if market["quote"] == "BKRW":
-        #     bkrw_markets.append(market)
-        # if market["quote"] == "AUD":
-        #     aud_markets.append(market)
-        # if market["quote"] == "DOGE":
-        #     doge_markets.append(market)
-        # if market["quote"] == "EUR":
-        #     eur_markets.append(market)
+#         # print(market)
+#         # print(type(market))
+#         # if market["quote"] == "BRL":
+#         #     brl_markets.append(market)
+#         # if market["quote"] == "BKRW":
+#         #     bkrw_markets.append(market)
+#         # if market["quote"] == "AUD":
+#         #     aud_markets.append(market)
+#         # if market["quote"] == "DOGE":
+#         #     doge_markets.append(market)
+#         # if market["quote"] == "EUR":
+#         #     eur_markets.append(market)
 
-        # if market["quote"] == "RUB":
-        #     rub_markets.append(market)
-        # if market["quote"] == "USDP":
-        #     usdp_markets.append(market)
-        # if market["quote"] == "GBP":
-        #     gbp_markets.append(market)
-        # if market["quote"] == "TRX":
-        #     trx_markets.append(market)
-        # if market["quote"] == "ZAR":
-        #     zar_markets.append(market)
-        # if market["quote"] == "BIDR":
-        #     bidr_markets.append(market)
-        # if market["quote"] == "USDS":
-        #     usds_markets.append(market)
-        # if market["quote"] == "TRY":
-        #     try_markets.append(market)
-        # if market["quote"] == "NGN":
-        #     ngn_markets.append(market)
-        # if market["quote"] == "XRP":
-        #     xrp_markets.append(market)
-        # if market["quote"] == "UAH":
-        #     uah_markets.append(market)
-        # if market["quote"] == "BVND":
-        #     bvnd_markets.append(market)
-        # if market["quote"] == "GYEN":
-        #     gyen_markets.append(market)
+#         # if market["quote"] == "RUB":
+#         #     rub_markets.append(market)
+#         # if market["quote"] == "USDP":
+#         #     usdp_markets.append(market)
+#         # if market["quote"] == "GBP":
+#         #     gbp_markets.append(market)
+#         # if market["quote"] == "TRX":
+#         #     trx_markets.append(market)
+#         # if market["quote"] == "ZAR":
+#         #     zar_markets.append(market)
+#         # if market["quote"] == "BIDR":
+#         #     bidr_markets.append(market)
+#         # if market["quote"] == "USDS":
+#         #     usds_markets.append(market)
+#         # if market["quote"] == "TRY":
+#         #     try_markets.append(market)
+#         # if market["quote"] == "NGN":
+#         #     ngn_markets.append(market)
+#         # if market["quote"] == "XRP":
+#         #     xrp_markets.append(market)
+#         # if market["quote"] == "UAH":
+#         #     uah_markets.append(market)
+#         # if market["quote"] == "BVND":
+#         #     bvnd_markets.append(market)
+#         # if market["quote"] == "GYEN":
+#         #     gyen_markets.append(market)
 
-        # if market["quote"] == "UST":
-        #     ust_markets.append(market)
-        # if market["quote"] == "PAX":
-        #     pax_markets.append(market)
-        # if market["quote"] == "IDRT":
-        #     idrt_markets.append(market)
-        # if market["quote"] == "DOT":
-        #     dot_markets.append(market)
-        # if market["quote"] == "VAI":
-        #     vai_markets.append(market)
-        # if market["quote"] == "DAI":
-        #     dai_markets.append(market)
-        if market["quote"] == "BTC":
-            btc_markets.append(market)
-        if market["quote"] == "BNB":
-            bnb_markets.append(market)
-        if market["quote"] == "ETH":
-            eth_markets.append(market)
-        if market["quote"] == "USDT":
-            if market["base"] == "BTC":
-                fiat_btc_markets.append(market)
-            elif market["base"] == "ETH":
-                fiat_eth_markets.append(market)
-            elif market["base"] == "BNB":
-                fiat_bnb_markets.append(market)
-            else:
-                pass
-                # usdt_markets.append(market)
+#         # if market["quote"] == "UST":
+#         #     ust_markets.append(market)
+#         # if market["quote"] == "PAX":
+#         #     pax_markets.append(market)
+#         # if market["quote"] == "IDRT":
+#         #     idrt_markets.append(market)
+#         # if market["quote"] == "DOT":
+#         #     dot_markets.append(market)
+#         # if market["quote"] == "VAI":
+#         #     vai_markets.append(market)
+#         # if market["quote"] == "DAI":
+#         #     dai_markets.append(market)
+#         if market["quote"] == "BTC":
+#             btc_markets.append(market)
+#         if market["quote"] == "BNB":
+#             bnb_markets.append(market)
+#         if market["quote"] == "ETH":
+#             eth_markets.append(market)
+#         if market["quote"] == "USDT":
+#             if market["base"] == "BTC":
+#                 fiat_btc_markets.append(market)
+#             elif market["base"] == "ETH":
+#                 fiat_eth_markets.append(market)
+#             elif market["base"] == "BNB":
+#                 fiat_bnb_markets.append(market)
+#             else:
+#                 pass
+#                 # usdt_markets.append(market)
 
-        if market["quote"] == "TUSD":
-            if market["base"] == "BTC":
-                fiat_btc_markets.append(market)
-            elif market["base"] == "ETH":
-                fiat_eth_markets.append(market)
-            elif market["base"] == "BNB":
-                fiat_bnb_markets.append(market)
-            else:
-                pass
-                # tusd_markets.append(market)
+#         if market["quote"] == "TUSD":
+#             if market["base"] == "BTC":
+#                 fiat_btc_markets.append(market)
+#             elif market["base"] == "ETH":
+#                 fiat_eth_markets.append(market)
+#             elif market["base"] == "BNB":
+#                 fiat_bnb_markets.append(market)
+#             else:
+#                 pass
+#                 # tusd_markets.append(market)
 
-        if market["quote"] == "USDC":
-            if market["base"] == "BTC":
-                fiat_btc_markets.append(market)
-            elif market["base"] == "ETH":
-                fiat_eth_markets.append(market)
-            elif market["base"] == "BNB":
-                fiat_bnb_markets.append(market)
-            else:
-                pass
-                # usdc_markets.append(market)
+#         if market["quote"] == "USDC":
+#             if market["base"] == "BTC":
+#                 fiat_btc_markets.append(market)
+#             elif market["base"] == "ETH":
+#                 fiat_eth_markets.append(market)
+#             elif market["base"] == "BNB":
+#                 fiat_bnb_markets.append(market)
+#             else:
+#                 pass
+#                 # usdc_markets.append(market)
 
-        if market["quote"] == "BUSD":
-            if market["base"] == "BTC":
-                fiat_btc_markets.append(market)
-            elif market["base"] == "ETH":
-                fiat_eth_markets.append(market)
-            elif market["base"] == "BNB":
-                fiat_bnb_markets.append(market)
-            else:
-                pass
-                # busd_markets.append(market)
+#         if market["quote"] == "BUSD":
+#             if market["base"] == "BTC":
+#                 fiat_btc_markets.append(market)
+#             elif market["base"] == "ETH":
+#                 fiat_eth_markets.append(market)
+#             elif market["base"] == "BNB":
+#                 fiat_bnb_markets.append(market)
+#             else:
+#                 pass
+#                 # busd_markets.append(market)
 
-    quotePairsUnique = list(set(quotePairs))
-    # print(quotePairsUnique)
-    for pair in quotePairsUnique:
-        if pair not in basePairs:
-            # print(pair)
-            newPairs.append(pair)
-    # total_brl_alt_volume = 0.0
-    # total_bkrw_alt_volume = 0.0
-    # total_aud_alt_volume = 0.0
-    # total_doge_alt_volume = 0.0
-    # total_rub_alt_volume = 0.0
-    # total_trx_alt_volume = 0.0
-    # total_zar_alt_volume = 0.0
-    # total_bidr_alt_volume = 0.0
-    # total_try_alt_volume = 0.0
-    # total_ngn_alt_volume = 0.0
-    # total_xrp_alt_volume = 0.0
-    # total_bvnd_alt_volume = 0.0
-    # total_gyen_alt_volume = 0.0
-    # total_idrt_alt_volume = 0.0
-    # total_dot_alt_volume = 0.0
-    # total_vai_alt_volume = 0.0
-    # total_dai_alt_volume = 0.0
-    # total_pax_alt_volume = 0.0
-    # total_usds_alt_volume = 0.0
-    # total_uah_alt_volume = 0.0
-    # total_ust_alt_volume = 0.0
-    # total_eur_alt_volume = 0.0
-    # total_busd_alt_volume = 0.0
-    # total_usdc_alt_volume = 0.0
-    # total_usdp_alt_volume = 0.0
-    # total_gbp_alt_volume = 0.0
-    # total_usdt_alt_volume = 0.0
-    # total_tusd_alt_volume = 0.0
+#     quotePairsUnique = list(set(quotePairs))
+#     # print(quotePairsUnique)
+#     for pair in quotePairsUnique:
+#         if pair not in basePairs:
+#             # print(pair)
+#             newPairs.append(pair)
+#     # total_brl_alt_volume = 0.0
+#     # total_bkrw_alt_volume = 0.0
+#     # total_aud_alt_volume = 0.0
+#     # total_doge_alt_volume = 0.0
+#     # total_rub_alt_volume = 0.0
+#     # total_trx_alt_volume = 0.0
+#     # total_zar_alt_volume = 0.0
+#     # total_bidr_alt_volume = 0.0
+#     # total_try_alt_volume = 0.0
+#     # total_ngn_alt_volume = 0.0
+#     # total_xrp_alt_volume = 0.0
+#     # total_bvnd_alt_volume = 0.0
+#     # total_gyen_alt_volume = 0.0
+#     # total_idrt_alt_volume = 0.0
+#     # total_dot_alt_volume = 0.0
+#     # total_vai_alt_volume = 0.0
+#     # total_dai_alt_volume = 0.0
+#     # total_pax_alt_volume = 0.0
+#     # total_usds_alt_volume = 0.0
+#     # total_uah_alt_volume = 0.0
+#     # total_ust_alt_volume = 0.0
+#     # total_eur_alt_volume = 0.0
+#     # total_busd_alt_volume = 0.0
+#     # total_usdc_alt_volume = 0.0
+#     # total_usdp_alt_volume = 0.0
+#     # total_gbp_alt_volume = 0.0
+#     # total_usdt_alt_volume = 0.0
+#     # total_tusd_alt_volume = 0.0
 
-    total_btc_alt_volume = 0.0
-    total_eth_alt_volume = 0.0
-    total_bnb_alt_volume = 0.0
-    total_btc_fiat_volume = 0.0
-    total_eth_fiat_volume = 0.0
-    total_bnb_fiat_volume = 0.0
+#     total_btc_alt_volume = 0.0
+#     total_eth_alt_volume = 0.0
+#     total_bnb_alt_volume = 0.0
+#     total_btc_fiat_volume = 0.0
+#     total_eth_fiat_volume = 0.0
+#     total_bnb_fiat_volume = 0.0
 
-    # for market in brl_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_brl_alt_volume += float(ticker["q"])
-    # for market in bkrw_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_bkrw_alt_volume += float(ticker["q"])
-    # for market in aud_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_aud_alt_volume += float(ticker["q"])
-    # for market in doge_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_doge_alt_volume += float(ticker["q"])
-    # for market in eur_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_eur_alt_volume += float(ticker["q"])
+#     # for market in brl_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_brl_alt_volume += float(ticker["q"])
+#     # for market in bkrw_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_bkrw_alt_volume += float(ticker["q"])
+#     # for market in aud_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_aud_alt_volume += float(ticker["q"])
+#     # for market in doge_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_doge_alt_volume += float(ticker["q"])
+#     # for market in eur_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_eur_alt_volume += float(ticker["q"])
 
-    # for market in busd_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_busd_alt_volume += float(ticker["q"])
-    # for market in usdc_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_usdc_alt_volume += float(ticker["q"])
-    # for market in rub_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_rub_alt_volume += float(ticker["q"])
-    # for market in usdp_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_usdp_alt_volume += float(ticker["q"])
-    # for market in gbp_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_gbp_alt_volume += float(ticker["q"])
-    # for market in trx_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_trx_alt_volume += float(ticker["q"])
-    # for market in zar_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_zar_alt_volume += float(ticker["q"])
-    # for market in bidr_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_bidr_alt_volume += float(ticker["q"])
-    # for market in usds_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_usds_alt_volume += float(ticker["q"])
-    # for market in try_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_try_alt_volume += float(ticker["q"])
-    # for market in ngn_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_ngn_alt_volume += float(ticker["q"])
-    # for market in xrp_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_xrp_alt_volume += float(ticker["q"])
-    # for market in uah_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_uah_alt_volume += float(ticker["q"])
-    # for market in bvnd_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_bvnd_alt_volume += float(ticker["q"])
-    # for market in gyen_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_gyen_alt_volume += float(ticker["q"])
+#     # for market in busd_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_busd_alt_volume += float(ticker["q"])
+#     # for market in usdc_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_usdc_alt_volume += float(ticker["q"])
+#     # for market in rub_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_rub_alt_volume += float(ticker["q"])
+#     # for market in usdp_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_usdp_alt_volume += float(ticker["q"])
+#     # for market in gbp_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_gbp_alt_volume += float(ticker["q"])
+#     # for market in trx_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_trx_alt_volume += float(ticker["q"])
+#     # for market in zar_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_zar_alt_volume += float(ticker["q"])
+#     # for market in bidr_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_bidr_alt_volume += float(ticker["q"])
+#     # for market in usds_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_usds_alt_volume += float(ticker["q"])
+#     # for market in try_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_try_alt_volume += float(ticker["q"])
+#     # for market in ngn_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_ngn_alt_volume += float(ticker["q"])
+#     # for market in xrp_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_xrp_alt_volume += float(ticker["q"])
+#     # for market in uah_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_uah_alt_volume += float(ticker["q"])
+#     # for market in bvnd_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_bvnd_alt_volume += float(ticker["q"])
+#     # for market in gyen_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_gyen_alt_volume += float(ticker["q"])
 
-    # for market in ust_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_ust_alt_volume += float(ticker["q"])
-    # for market in pax_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_pax_alt_volume += float(ticker["q"])
-    # for market in idrt_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_idrt_alt_volume += float(ticker["q"])
-    # for market in dot_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_dot_alt_volume += float(ticker["q"])
-    # for market in vai_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_vai_alt_volume += float(ticker["q"])
-    # for market in dai_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_dai_alt_volume += float(ticker["q"])
+#     # for market in ust_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_ust_alt_volume += float(ticker["q"])
+#     # for market in pax_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_pax_alt_volume += float(ticker["q"])
+#     # for market in idrt_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_idrt_alt_volume += float(ticker["q"])
+#     # for market in dot_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_dot_alt_volume += float(ticker["q"])
+#     # for market in vai_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_vai_alt_volume += float(ticker["q"])
+#     # for market in dai_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_dai_alt_volume += float(ticker["q"])
 
-    # for market in usdt_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_usdt_alt_volume += float(ticker["q"])
-    # for market in tusd_markets:
-    #     ticker = r.get(market["id"])
-    #     if ticker is not None:
-    #         ticker = dict(json.loads(ticker))
-    #         total_tusd_alt_volume += float(ticker["q"])
-####
-    for market in btc_markets:
-        ticker = r.get(market["id"])
-        if ticker is not None:
-            ticker = dict(json.loads(ticker))
-            total_btc_alt_volume += float(ticker["q"])  # volume = BTC
+#     # for market in usdt_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_usdt_alt_volume += float(ticker["q"])
+#     # for market in tusd_markets:
+#     #     ticker = r.get(market["id"])
+#     #     if ticker is not None:
+#     #         ticker = dict(json.loads(ticker))
+#     #         total_tusd_alt_volume += float(ticker["q"])
+# ####
+#     for market in btc_markets:
+#         ticker = r.get(market["id"])
+#         if ticker is not None:
+#             ticker = dict(json.loads(ticker))
+#             total_btc_alt_volume += float(ticker["q"])  # volume = BTC
 
-    for market in eth_markets:
-        ticker = r.get(market["id"])
-        if ticker is not None:
-            ticker = dict(json.loads(ticker))
-            total_eth_alt_volume += float(ticker["q"])  # voluem = ETH
+#     for market in eth_markets:
+#         ticker = r.get(market["id"])
+#         if ticker is not None:
+#             ticker = dict(json.loads(ticker))
+#             total_eth_alt_volume += float(ticker["q"])  # voluem = ETH
 
-    for market in bnb_markets:
-        ticker = r.get(market["id"])
-        if ticker is not None:
-            ticker = dict(json.loads(ticker))
-            total_bnb_alt_volume += float(ticker["q"])  # volume = BNB
+#     for market in bnb_markets:
+#         ticker = r.get(market["id"])
+#         if ticker is not None:
+#             ticker = dict(json.loads(ticker))
+#             total_bnb_alt_volume += float(ticker["q"])  # volume = BNB
 
-    for market in fiat_btc_markets:
-        ticker = r.get(market["id"])
-        if ticker is not None:
-            ticker = dict(json.loads(ticker))
-            total_btc_fiat_volume += float(ticker["q"])  # volume = USD
+#     for market in fiat_btc_markets:
+#         ticker = r.get(market["id"])
+#         if ticker is not None:
+#             ticker = dict(json.loads(ticker))
+#             total_btc_fiat_volume += float(ticker["q"])  # volume = USD
 
-    for market in fiat_eth_markets:
-        ticker = r.get(market["id"])
-        if ticker is not None:
-            ticker = dict(json.loads(ticker))
-            total_eth_fiat_volume += float(ticker["q"])  # volume = USD
+#     for market in fiat_eth_markets:
+#         ticker = r.get(market["id"])
+#         if ticker is not None:
+#             ticker = dict(json.loads(ticker))
+#             total_eth_fiat_volume += float(ticker["q"])  # volume = USD
 
-    for market in fiat_bnb_markets:
-        ticker = r.get(market["id"])
-        if ticker is not None:
-            ticker = dict(json.loads(ticker))
-            total_bnb_fiat_volume += float(ticker["q"])  # volume = USD
+#     for market in fiat_bnb_markets:
+#         ticker = r.get(market["id"])
+#         if ticker is not None:
+#             ticker = dict(json.loads(ticker))
+#             total_bnb_fiat_volume += float(ticker["q"])  # volume = USD
 
-    # total_brl_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="BRL") * total_brl_alt_volume, 2)
-    # total_bkrw_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="BKRW") * total_bkrw_alt_volume, 2)
-    # total_aud_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="AUD") * total_aud_alt_volume, 2)
-    # total_doge_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="DOGE") * total_doge_alt_volume, 2)
-    # total_rub_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="RUB") * total_rub_alt_volume, 2)
-    # total_trx_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="TRX") * total_trx_alt_volume, 2)
-    # total_zar_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="ZAR") * total_zar_alt_volume, 2)
-    # total_bidr_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="BIDR") * total_bidr_alt_volume, 2)
-    # total_try_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="TRY") * total_try_alt_volume, 2)
-    # total_ngn_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="NGN") * total_ngn_alt_volume, 2)
-    # total_xrp_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="XRP") * total_xrp_alt_volume, 2)
-    # total_bvnd_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="BVND") * total_bvnd_alt_volume, 2)
-    # total_gyen_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="GYEN") * total_gyen_alt_volume, 2)
-    # total_idrt_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="IDRT") * total_idrt_alt_volume, 2)
-    # total_dot_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="DOT") * total_dot_alt_volume, 2)
-    # total_vai_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="VAI") * total_vai_alt_volume, 2)
-    # total_dai_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="DAI") * total_dai_alt_volume, 2)
-    # total_pax_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="PAX") * total_pax_alt_volume, 2)
-    # total_usds_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="USDS") * total_usds_alt_volume, 2)
-    # total_uah_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="UAH") * total_uah_alt_volume, 2)
-    # total_ust_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="UST") * total_ust_alt_volume, 2)
-    # total_eur_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="EUR") * total_eur_alt_volume, 2)
-    # total_busd_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="BUSD") * total_busd_alt_volume, 2)
-    # total_usdc_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="USDC") * total_usdc_alt_volume, 2)
-    # total_usdp_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="USDP") * total_usdp_alt_volume, 2)
-    # total_gbp_alt_volume_usdt = round(
-    #     calculate_dollar_price(coin="GBP") * total_gbp_alt_volume, 2)
+#     # total_brl_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="BRL") * total_brl_alt_volume, 2)
+#     # total_bkrw_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="BKRW") * total_bkrw_alt_volume, 2)
+#     # total_aud_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="AUD") * total_aud_alt_volume, 2)
+#     # total_doge_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="DOGE") * total_doge_alt_volume, 2)
+#     # total_rub_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="RUB") * total_rub_alt_volume, 2)
+#     # total_trx_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="TRX") * total_trx_alt_volume, 2)
+#     # total_zar_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="ZAR") * total_zar_alt_volume, 2)
+#     # total_bidr_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="BIDR") * total_bidr_alt_volume, 2)
+#     # total_try_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="TRY") * total_try_alt_volume, 2)
+#     # total_ngn_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="NGN") * total_ngn_alt_volume, 2)
+#     # total_xrp_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="XRP") * total_xrp_alt_volume, 2)
+#     # total_bvnd_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="BVND") * total_bvnd_alt_volume, 2)
+#     # total_gyen_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="GYEN") * total_gyen_alt_volume, 2)
+#     # total_idrt_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="IDRT") * total_idrt_alt_volume, 2)
+#     # total_dot_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="DOT") * total_dot_alt_volume, 2)
+#     # total_vai_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="VAI") * total_vai_alt_volume, 2)
+#     # total_dai_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="DAI") * total_dai_alt_volume, 2)
+#     # total_pax_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="PAX") * total_pax_alt_volume, 2)
+#     # total_usds_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="USDS") * total_usds_alt_volume, 2)
+#     # total_uah_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="UAH") * total_uah_alt_volume, 2)
+#     # total_ust_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="UST") * total_ust_alt_volume, 2)
+#     # total_eur_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="EUR") * total_eur_alt_volume, 2)
+#     # total_busd_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="BUSD") * total_busd_alt_volume, 2)
+#     # total_usdc_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="USDC") * total_usdc_alt_volume, 2)
+#     # total_usdp_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="USDP") * total_usdp_alt_volume, 2)
+#     # total_gbp_alt_volume_usdt = round(
+#     #     calculate_dollar_price(coin="GBP") * total_gbp_alt_volume, 2)
 
-    total_btc_alt_volume_usdt = round(
-        calculate_dollar_price(coin="BTC") * total_btc_alt_volume, 2
-    )
-    total_bnb_alt_volume_usdt = round(
-        calculate_dollar_price(coin="ETH") * total_eth_alt_volume, 2
-    )
-    total_eth_alt_volume_usdt = round(
-        calculate_dollar_price(coin="BNB") * total_bnb_alt_volume, 2
-    )
+#     total_btc_alt_volume_usdt = round(
+#         calculate_dollar_price(coin="BTC") * total_btc_alt_volume, 2
+#     )
+#     total_bnb_alt_volume_usdt = round(
+#         calculate_dollar_price(coin="ETH") * total_eth_alt_volume, 2
+#     )
+#     total_eth_alt_volume_usdt = round(
+#         calculate_dollar_price(coin="BNB") * total_bnb_alt_volume, 2
+#     )
 
-    total_volume = (
-        total_btc_alt_volume_usdt
-        + total_eth_alt_volume_usdt
-        + total_bnb_alt_volume_usdt
-        + total_btc_fiat_volume
-        + total_eth_fiat_volume
-        + total_bnb_fiat_volume
-        # + total_brl_alt_volume_usdt
-        # + total_bkrw_alt_volume_usdt
-        # + total_aud_alt_volume_usdt
-        # + total_doge_alt_volume_usdt
-        # + total_rub_alt_volume_usdt/
-        # + total_trx_alt_volume_usdt
-        # + total_zar_alt_volume_usdt
-        # + total_bidr_alt_volume_usdt
-        # + total_try_alt_volume_usdt
-        # + total_ngn_alt_volume_usdt
-        # + total_xrp_alt_volume_usdt
-        # + total_bvnd_alt_volume_usdt
-        # + total_gyen_alt_volume_usdt
-        # + total_idrt_alt_volume_usdt
-        # + total_dot_alt_volume_usdt
-        # + total_vai_alt_volume_usdt
-        # + total_dai_alt_volume_usdt
-        # + total_pax_alt_volume_usdt
-        # + total_usds_alt_volume_usdt
-        # + total_uah_alt_volume_usdt
-        # + total_ust_alt_volume_usdt
-        # + total_eur_alt_volume_usdt
-        # + total_busd_alt_volume_usdt
-        # + total_usdc_alt_volume_usdt
-        # + total_usdp_alt_volume_usdt
-        # + total_gbp_alt_volume_usdt
-    )
+#     total_volume = (
+#         total_btc_alt_volume_usdt
+#         + total_eth_alt_volume_usdt
+#         + total_bnb_alt_volume_usdt
+#         + total_btc_fiat_volume
+#         + total_eth_fiat_volume
+#         + total_bnb_fiat_volume
+#         # + total_brl_alt_volume_usdt
+#         # + total_bkrw_alt_volume_usdt
+#         # + total_aud_alt_volume_usdt
+#         # + total_doge_alt_volume_usdt
+#         # + total_rub_alt_volume_usdt/
+#         # + total_trx_alt_volume_usdt
+#         # + total_zar_alt_volume_usdt
+#         # + total_bidr_alt_volume_usdt
+#         # + total_try_alt_volume_usdt
+#         # + total_ngn_alt_volume_usdt
+#         # + total_xrp_alt_volume_usdt
+#         # + total_bvnd_alt_volume_usdt
+#         # + total_gyen_alt_volume_usdt
+#         # + total_idrt_alt_volume_usdt
+#         # + total_dot_alt_volume_usdt
+#         # + total_vai_alt_volume_usdt
+#         # + total_dai_alt_volume_usdt
+#         # + total_pax_alt_volume_usdt
+#         # + total_usds_alt_volume_usdt
+#         # + total_uah_alt_volume_usdt
+#         # + total_ust_alt_volume_usdt
+#         # + total_eur_alt_volume_usdt
+#         # + total_busd_alt_volume_usdt
+#         # + total_usdc_alt_volume_usdt
+#         # + total_usdp_alt_volume_usdt
+#         # + total_gbp_alt_volume_usdt
+#     )
 
-    try:
-        btc_strength = round(
-            (total_btc_fiat_volume * 100)
-            / total_volume,
-            4,
-        )
-    except TypeError:
-        btc_strength = 0
-    except ZeroDivisionError:
-        btc_strength = 0
+#     try:
+#         btc_strength = round(
+#             (total_btc_fiat_volume * 100)
+#             / total_volume,
+#             4,
+#         )
+#     except TypeError:
+#         btc_strength = 0
+#     except ZeroDivisionError:
+#         btc_strength = 0
 
-    try:
-        eth_strength = round(
-            (total_eth_fiat_volume * 100)
-            / total_volume,
-            4,
-        )
-    except TypeError:
-        eth_strength = 0
-    except ZeroDivisionError:
-        eth_strength = 0
+#     try:
+#         eth_strength = round(
+#             (total_eth_fiat_volume * 100)
+#             / total_volume,
+#             4,
+#         )
+#     except TypeError:
+#         eth_strength = 0
+#     except ZeroDivisionError:
+#         eth_strength = 0
 
-    try:
-        bnb_strength = round(
-            (total_bnb_fiat_volume * 100)
-            / total_volume,
-            4,
-        )
-    except TypeError:
-        bnb_strength = 0
-    except ZeroDivisionError:
-        bnb_strength = 0
+#     try:
+#         bnb_strength = round(
+#             (total_bnb_fiat_volume * 100)
+#             / total_volume,
+#             4,
+#         )
+#     except TypeError:
+#         bnb_strength = 0
+#     except ZeroDivisionError:
+#         bnb_strength = 0
 
-    try:
-        btc_alt_strength = round(
-            (total_btc_alt_volume_usdt * 100)
-            / total_volume,
-            4,
-        )
-    except TypeError:
-        btc_alt_strength = 0
-    except ZeroDivisionError:
-        btc_alt_strength = 0
+#     try:
+#         btc_alt_strength = round(
+#             (total_btc_alt_volume_usdt * 100)
+#             / total_volume,
+#             4,
+#         )
+#     except TypeError:
+#         btc_alt_strength = 0
+#     except ZeroDivisionError:
+#         btc_alt_strength = 0
 
-    try:
-        eth_alt_strength = round(
-            (total_eth_alt_volume_usdt * 100)
-            / total_volume,
-            4,
-        )
-    except TypeError:
-        eth_alt_strength = 0
-    except ZeroDivisionError:
-        eth_alt_strength = 0
+#     try:
+#         eth_alt_strength = round(
+#             (total_eth_alt_volume_usdt * 100)
+#             / total_volume,
+#             4,
+#         )
+#     except TypeError:
+#         eth_alt_strength = 0
+#     except ZeroDivisionError:
+#         eth_alt_strength = 0
 
-    try:
-        bnb_alt_strength = round(
-            (total_bnb_alt_volume_usdt * 100)
-            / total_volume,
-            4,
-        )
-    except TypeError:
-        bnb_alt_strength = 0
-    except ZeroDivisionError:
-        bnb_alt_strength = 0
+#     try:
+#         bnb_alt_strength = round(
+#             (total_bnb_alt_volume_usdt * 100)
+#             / total_volume,
+#             4,
+#         )
+#     except TypeError:
+#         bnb_alt_strength = 0
+#     except ZeroDivisionError:
+#         bnb_alt_strength = 0
 
-#     # data = [
-#     #     dateNow,
-#     #     total_btc_fiat_volume,
-#     #     total_eth_fiat_volume,
-#     #     total_bnb_fiat_volume,
-#     #     total_btc_alt_volume_usdt,
-#     #     total_eth_alt_volume_usdt,
-#     #     total_bnb_alt_volume_usdt,
-#     #     total_volume,
-#     #     btc_strength,
-#     #     eth_strength,
-#     #     bnb_strength,
-#     # ]
+# #     # data = [
+# #     #     dateNow,
+# #     #     total_btc_fiat_volume,
+# #     #     total_eth_fiat_volume,
+# #     #     total_bnb_fiat_volume,
+# #     #     total_btc_alt_volume_usdt,
+# #     #     total_eth_alt_volume_usdt,
+# #     #     total_bnb_alt_volume_usdt,
+# #     #     total_volume,
+# #     #     btc_strength,
+# #     #     eth_strength,
+# #     #     bnb_strength,
+# #     # ]
+# #     data = {
+
+# #         "fiatBtcVolume": total_btc_fiat_volume,
+# #         "fiatEthVolume": total_eth_fiat_volume,
+# #         "fiatBnbVolume": total_bnb_fiat_volume,
+# #         "btcAltVolume": total_btc_alt_volume_usdt,
+# #         "ethAltVolume": total_eth_alt_volume_usdt,
+# #         "bnbAltVolume": total_bnb_alt_volume_usdt,
+# #         "totalVolume": total_volume,
+# #         "altBtcStrength": btc_strength,
+# #         "altEthStrength": eth_strength,
+# #         "altBnbStrength": bnb_strength,
+# #     }
 #     data = {
-
-#         "fiatBtcVolume": total_btc_fiat_volume,
-#         "fiatEthVolume": total_eth_fiat_volume,
-#         "fiatBnbVolume": total_bnb_fiat_volume,
-#         "btcAltVolume": total_btc_alt_volume_usdt,
-#         "ethAltVolume": total_eth_alt_volume_usdt,
-#         "bnbAltVolume": total_bnb_alt_volume_usdt,
-#         "totalVolume": total_volume,
-#         "altBtcStrength": btc_strength,
-#         "altEthStrength": eth_strength,
-#         "altBnbStrength": bnb_strength,
-#     }
-    data = {
-        # "date": datetime.datetime.now().strftime("%s"),
-        "fiatBtcVolume": (total_btc_fiat_volume / 1000000),
-        "fiatEthVolume": (total_eth_fiat_volume / 1000000),
-        "fiatBnbVolume": (total_bnb_fiat_volume / 1000000),
-        "btcAltVolume": (total_btc_alt_volume_usdt / 1000000),
-        "ethAltVolume": (total_eth_alt_volume_usdt / 1000000),
-        "bnbAltVolume": (total_bnb_alt_volume_usdt / 1000000),
-        "totalVolume": (total_volume / 1000000),
-        "btcStrength": btc_strength,
-        "ethStrength": eth_strength,
-        "bnbStrength": bnb_strength,
-        "altBtcStrength": btc_alt_strength,
-        "altEthStrength": eth_alt_strength,
-        "altBnbStrength": bnb_alt_strength,
-        # "total_brl_alt_volume_usdt": (total_brl_alt_volume_usdt / 1000000),
-        # "total_bkrw_alt_volume_usdt": (total_bkrw_alt_volume_usdt / 1000000),
-        # "total_aud_alt_volume_usdt": (total_aud_alt_volume_usdt / 1000000),
-        # "total_doge_alt_volume_usdt": (total_doge_alt_volume_usdt / 1000000),
-        # "total_rub_alt_volume_usdt": (total_rub_alt_volume_usdt / 1000000),
-        # "total_trx_alt_volume_usdt": (total_trx_alt_volume_usdt / 1000000),
-        # "total_zar_alt_volume_usdt": (total_zar_alt_volume_usdt / 1000000),
-        # "total_bidr_alt_volume_usdt": (total_bidr_alt_volume_usdt / 1000000),
-        # "total_try_alt_volume_usdt": (total_try_alt_volume_usdt / 1000000),
-        # "total_ngn_alt_volume_usdt": (total_ngn_alt_volume_usdt / 1000000),
-        # "total_xrp_alt_volume_usdt": (total_xrp_alt_volume_usdt / 1000000),
-        # "total_bvnd_alt_volume_usdt": (total_bvnd_alt_volume_usdt / 1000000),
-        # "total_gyen_alt_volume_usdt": (total_gyen_alt_volume_usdt / 1000000),
-        # "total_idrt_alt_volume_usdt": (total_idrt_alt_volume_usdt / 1000000),
-        # "total_dot_alt_volume_usdt": (total_dot_alt_volume_usdt / 1000000),
-        # "total_vai_alt_volume_usdt": (total_vai_alt_volume_usdt / 1000000),
-        # "total_dai_alt_volume_usdt": (total_dai_alt_volume_usdt / 1000000),
-        # "total_pax_alt_volume_usdt": (total_pax_alt_volume_usdt / 1000000),
-        # "total_usds_alt_volume_usdt": (total_usds_alt_volume_usdt / 1000000),
-        # "total_uah_alt_volume_usdt": (total_uah_alt_volume_usdt / 1000000),
-        # "total_ust_alt_volume_usdt": (total_ust_alt_volume_usdt / 1000000),
-        # "total_eur_alt_volume_usdt": (total_eur_alt_volume_usdt / 1000000),
-        # "total_busd_alt_volume_usdt": (total_busd_alt_volume_usdt / 1000000),
-        # "total_usdc_alt_volume_usdt": (total_usdc_alt_volume_usdt / 1000000),
-        # "total_usdp_alt_volume_usdt": (total_usdp_alt_volume_usdt / 1000000),
-        # "total_gbp_alt_volume_usdt": (total_gbp_alt_volume_usdt / 1000000),
-    }
-#     # connect(host=MONGO_URL)
-#     data1 = {
-#         "date": datetime.datetime.now().strftime("%m/%d/%Y, %H:%M"),
+#         # "date": datetime.datetime.now().strftime("%s"),
 #         "fiatBtcVolume": (total_btc_fiat_volume / 1000000),
 #         "fiatEthVolume": (total_eth_fiat_volume / 1000000),
 #         "fiatBnbVolume": (total_bnb_fiat_volume / 1000000),
@@ -891,109 +848,152 @@ def update_barometer(save=False):
 #         "ethAltVolume": (total_eth_alt_volume_usdt / 1000000),
 #         "bnbAltVolume": (total_bnb_alt_volume_usdt / 1000000),
 #         "totalVolume": (total_volume / 1000000),
-#         "altBtcStrength": btc_strength,
-#         "altEthStrength": eth_strength,
-#         "altBnbStrength": bnb_strength,
+#         "btcStrength": btc_strength,
+#         "ethStrength": eth_strength,
+#         "bnbStrength": bnb_strength,
+#         "altBtcStrength": btc_alt_strength,
+#         "altEthStrength": eth_alt_strength,
+#         "altBnbStrength": bnb_alt_strength,
+#         # "total_brl_alt_volume_usdt": (total_brl_alt_volume_usdt / 1000000),
+#         # "total_bkrw_alt_volume_usdt": (total_bkrw_alt_volume_usdt / 1000000),
+#         # "total_aud_alt_volume_usdt": (total_aud_alt_volume_usdt / 1000000),
+#         # "total_doge_alt_volume_usdt": (total_doge_alt_volume_usdt / 1000000),
+#         # "total_rub_alt_volume_usdt": (total_rub_alt_volume_usdt / 1000000),
+#         # "total_trx_alt_volume_usdt": (total_trx_alt_volume_usdt / 1000000),
+#         # "total_zar_alt_volume_usdt": (total_zar_alt_volume_usdt / 1000000),
+#         # "total_bidr_alt_volume_usdt": (total_bidr_alt_volume_usdt / 1000000),
+#         # "total_try_alt_volume_usdt": (total_try_alt_volume_usdt / 1000000),
+#         # "total_ngn_alt_volume_usdt": (total_ngn_alt_volume_usdt / 1000000),
+#         # "total_xrp_alt_volume_usdt": (total_xrp_alt_volume_usdt / 1000000),
+#         # "total_bvnd_alt_volume_usdt": (total_bvnd_alt_volume_usdt / 1000000),
+#         # "total_gyen_alt_volume_usdt": (total_gyen_alt_volume_usdt / 1000000),
+#         # "total_idrt_alt_volume_usdt": (total_idrt_alt_volume_usdt / 1000000),
+#         # "total_dot_alt_volume_usdt": (total_dot_alt_volume_usdt / 1000000),
+#         # "total_vai_alt_volume_usdt": (total_vai_alt_volume_usdt / 1000000),
+#         # "total_dai_alt_volume_usdt": (total_dai_alt_volume_usdt / 1000000),
+#         # "total_pax_alt_volume_usdt": (total_pax_alt_volume_usdt / 1000000),
+#         # "total_usds_alt_volume_usdt": (total_usds_alt_volume_usdt / 1000000),
+#         # "total_uah_alt_volume_usdt": (total_uah_alt_volume_usdt / 1000000),
+#         # "total_ust_alt_volume_usdt": (total_ust_alt_volume_usdt / 1000000),
+#         # "total_eur_alt_volume_usdt": (total_eur_alt_volume_usdt / 1000000),
+#         # "total_busd_alt_volume_usdt": (total_busd_alt_volume_usdt / 1000000),
+#         # "total_usdc_alt_volume_usdt": (total_usdc_alt_volume_usdt / 1000000),
+#         # "total_usdp_alt_volume_usdt": (total_usdp_alt_volume_usdt / 1000000),
+#         # "total_gbp_alt_volume_usdt": (total_gbp_alt_volume_usdt / 1000000),
 #     }
-    headers = {
-        "Content-Type": "application/json",
-        "accept": "application/json"
-    }
-#     # requests.post("http://nextjs:3000/api/baro/newBaro", data=data)
-#     # requests.post("http://10.20.12.164:8000/api/v1/baro/",
-#     #               json=data1, headers=headers)
+# #     # connect(host=MONGO_URL)
+# #     data1 = {
+# #         "date": datetime.datetime.now().strftime("%m/%d/%Y, %H:%M"),
+# #         "fiatBtcVolume": (total_btc_fiat_volume / 1000000),
+# #         "fiatEthVolume": (total_eth_fiat_volume / 1000000),
+# #         "fiatBnbVolume": (total_bnb_fiat_volume / 1000000),
+# #         "btcAltVolume": (total_btc_alt_volume_usdt / 1000000),
+# #         "ethAltVolume": (total_eth_alt_volume_usdt / 1000000),
+# #         "bnbAltVolume": (total_bnb_alt_volume_usdt / 1000000),
+# #         "totalVolume": (total_volume / 1000000),
+# #         "altBtcStrength": btc_strength,
+# #         "altEthStrength": eth_strength,
+# #         "altBnbStrength": bnb_strength,
+# #     }
+#     headers = {
+#         "Content-Type": "application/json",
+#         "accept": "application/json"
+#     }
+# #     # requests.post("http://nextjs:3000/api/baro/newBaro", data=data)
+# #     # requests.post("http://10.20.12.164:8000/api/v1/baro/",
+# #     #               json=data1, headers=headers)
 
-#     # print(data1Test)
-    requests.post(os.environ.get('API') + "v2/baro/",
-                  json=data, headers=headers)
-#     # insertBaroData(baroData=data)
-#     # baroTable = Baro(date=dateNow,
-#     #                  fiatBtcVolume=total_btc_fiat_volume,
-#     #                  fiatEthVolume=total_eth_fiat_volume,
-#     #                  fiatBnbVolume=total_bnb_fiat_volume,
-#     #                  btcAltVolume=total_btc_alt_volume_usdt,
-#     #                  ethAltVolume=total_eth_alt_volume_usdt,
-#     #                  bnbAltVolume=total_bnb_alt_volume_usdt,
-#     #                  totalVolume=total_volume,
-#     #                  altBtcStrength=btc_strength,
-#     #                  altEthStrength=eth_strength,
-#     #                  altBnbStrength=bnb_strength)
-#     # baroTable.save()
-#     # disconnect()
-
-
-@shared_task
-def calculate_dollar_price(coin):
-    '''calculate dollar price'''
-    try:
-        price = dict(json.loads(r.get(coin + "USDT")))
-        # print(price)
-        price = float(price["c"])
-    except TypeError:
-        noValueCoins = ["BCX", "JEX", "QI"]
-        if coin not in noValueCoins:
-            price = get_database_price_for_pair(coin + "USDT")
-            if price == 0:
-                price = get_database_price_for_pair("USDT" + coin)
-                # print(price)
-                if price == 0:
-                    return 0
-            # print(price)
-        else:
-            price = 0
-    return price
+# #     # print(data1Test)
+#     requests.post(os.environ.get('API') + "v2/baro/",
+#                   json=data, headers=headers)
+# #     # insertBaroData(baroData=data)
+# #     # baroTable = Baro(date=dateNow,
+# #     #                  fiatBtcVolume=total_btc_fiat_volume,
+# #     #                  fiatEthVolume=total_eth_fiat_volume,
+# #     #                  fiatBnbVolume=total_bnb_fiat_volume,
+# #     #                  btcAltVolume=total_btc_alt_volume_usdt,
+# #     #                  ethAltVolume=total_eth_alt_volume_usdt,
+# #     #                  bnbAltVolume=total_bnb_alt_volume_usdt,
+# #     #                  totalVolume=total_volume,
+# #     #                  altBtcStrength=btc_strength,
+# #     #                  altEthStrength=eth_strength,
+# #     #                  altBnbStrength=bnb_strength)
+# #     # baroTable.save()
+# #     # disconnect()
 
 
-@shared_task
-def calculate_bitcoin_brice(coin):
-    '''calculate bitcoin price'''
-    try:
-        # print(coin)
-        price = dict(json.loads(r.get(coin + "BTC")))
-        # print(price)
-        price = float(price["c"])
-    except TypeError:
-        if coin == "BTC":
-            price = 1
-        else:
-            noValueCoins = ["BCX", "JEX", "QI", "SBTC"]
-            if coin not in noValueCoins:
-                price = get_database_price_for_pair(coin + "BTC")
+# @shared_task
+# def calculate_dollar_price(coin):
+#     '''calculate dollar price'''
+#     try:
+#         price = dict(json.loads(r.get(coin + "USDT")))
+#         # print(price)
+#         price = float(price["c"])
+#     except TypeError:
+#         noValueCoins = ["BCX", "JEX", "QI"]
+#         if coin not in noValueCoins:
+#             price = get_database_price_for_pair(coin + "USDT")
+#             if price == 0:
+#                 price = get_database_price_for_pair("USDT" + coin)
+#                 # print(price)
+#                 if price == 0:
+#                     return 0
+#             # print(price)
+#         else:
+#             price = 0
+#     return price
 
-            else:
-                price = 0
-    return price
+
+# @shared_task
+# def calculate_bitcoin_brice(coin):
+#     '''calculate bitcoin price'''
+#     try:
+#         # print(coin)
+#         price = dict(json.loads(r.get(coin + "BTC")))
+#         # print(price)
+#         price = float(price["c"])
+#     except TypeError:
+#         if coin == "BTC":
+#             price = 1
+#         else:
+#             noValueCoins = ["BCX", "JEX", "QI", "SBTC"]
+#             if coin not in noValueCoins:
+#                 price = get_database_price_for_pair(coin + "BTC")
+
+#             else:
+#                 price = 0
+#     return price
 
 
-@shared_task
-def get_database_price_for_pair(pair):
-    '''get database price for pair'''
-    # print(pair)
-    try:
-        # connect(host=MONGO_URL)
-        obj = requests.get(os.environ.get('API') + "v2/ticker/" + pair)
-        # obj = Tickers.objects.filter(market=pair).last()
-        # obj = filterTickers(market=pair)
+# @shared_task
+# def get_database_price_for_pair(pair):
+#     '''get database price for pair'''
+#     # print(pair)
+#     try:
+#         # connect(host=MONGO_URL)
+#         obj = requests.get(os.environ.get('API') + "v2/ticker/" + pair)
+#         # obj = Tickers.objects.filter(market=pair).last()
+#         # obj = filterTickers(market=pair)
 
-        if not obj:
+#         if not obj:
 
-            return 0
-        # print(obj)
-        # print(obj.json())
-        # disconnect()
-        data = obj.json()
-        # print(data)
-        # print(type(data))
-        price = data['close']
-        # print(price)
-        return price
-    except AttributeError:
-        # print("Att error")
-        price = 0
-    except IndexError:
-        # print("Index error")
-        price = 0
-    return price
+#             return 0
+#         # print(obj)
+#         # print(obj.json())
+#         # disconnect()
+#         data = obj.json()
+#         # print(data)
+#         # print(type(data))
+#         price = data['close']
+#         # print(price)
+#         return price
+#     except AttributeError:
+#         # print("Att error")
+#         price = 0
+#     except IndexError:
+#         # print("Index error")
+#         price = 0
+#     return price
 
 
 # # @shared_task
@@ -1140,235 +1140,235 @@ def get_database_price_for_pair(pair):
 # #     r.set("balances", str(json.dumps({"balances": balances})))
 
 
-@shared_task
-def build_indicators_from_candles():
-    '''build indicators from candles'''
-    # dateNow = datetime.datetime.now()
-    # queryTime = datetime.datetime.now() - datetime.timedelta(minutes=30)
-    # tableTickers = Tickers.objects.all().filter(date__gte=queryTime)
-    # tableTickers = indicatorTickers([queryTime, dateNow])
-    # tableTickers =
-    # response = requests.get(
-    #     'http://10.20.12.164:8000/api/v2/ticker/')
-    # if not response:
-    #     return 'error'
-    # filterTicker = response.json()
-    # print(len(tableTickers))
-    print('starting calculations')
-    keys = r.keys("market*")
-    # print('keys:')
-    # print(keys)
-    # channel_layer = get_channel_layer()
-    # history = 30
-    for key in keys:
-        # only btc pairs for now!!
-        market = dict(json.loads(r.get(key)))
-        # print(market)
-        if market["quote"] == "BTC" and market["base"] == 'ETH':
-            # print(market["id"])
-            response = requests.get(
-                os.environ.get('API') + 'v2/tickers/' + market["id"])
-            # print(response)
-            if not response:
-                continue
-            filterTicker = response.json()
-            # print(len(filterTicker))
+# @shared_task
+# def build_indicators_from_candles():
+#     '''build indicators from candles'''
+#     # dateNow = datetime.datetime.now()
+#     # queryTime = datetime.datetime.now() - datetime.timedelta(minutes=30)
+#     # tableTickers = Tickers.objects.all().filter(date__gte=queryTime)
+#     # tableTickers = indicatorTickers([queryTime, dateNow])
+#     # tableTickers =
+#     # response = requests.get(
+#     #     'http://10.20.12.164:8000/api/v2/ticker/')
+#     # if not response:
+#     #     return 'error'
+#     # filterTicker = response.json()
+#     # print(len(tableTickers))
+#     print('starting calculations')
+#     keys = r.keys("market*")
+#     # print('keys:')
+#     # print(keys)
+#     # channel_layer = get_channel_layer()
+#     # history = 30
+#     for key in keys:
+#         # only btc pairs for now!!
+#         market = dict(json.loads(r.get(key)))
+#         # print(market)
+#         if market["quote"] == "BTC" and market["base"] == 'ETH':
+#             # print(market["id"])
+#             response = requests.get(
+#                 os.environ.get('API') + 'v2/tickers/' + market["id"])
+#             # print(response)
+#             if not response:
+#                 continue
+#             filterTicker = response.json()
+#             # print(len(filterTicker))
 
-            # filterTicker = []
-            # try:
-            # for x in tableTickers:
-            # if market["id"] in x:
-            # filterTicker.append(x)
-            # print(filterTicker)
-            # print(len(filterTicker))
-            # df.to_timeseries(index='date')
-            # print(df)
-            if len(filterTicker) > 21:  # minimum 20 tickers to build BolingerBands
-                try:
-                    # print(df)
-                    # print(len(filterTicker))
-                    lastTicker = filterTicker[-1]
-                    # print(lastTicker)
-                    # print(type(lastTicker))
-                    # if lastTicker['quote'] > 50:       # ! min volume > 50 BTC   !!!! we do this in the frontend from now !!!!!
-                    # print('VOLUME OK')
-                    # print('creating dataframe')
-                    df = pd.DataFrame(
-                        filterTicker,
-                        columns=[
-                            "id",
-                            "date",
-                            "symbol",
-                            "market",
-                            "close",
-                            "open",
-                            "high",
-                            "low",
-                            "volume",
-                            "quote",
-                        ],
-                    )
-                    print(df['close'])
-                    # print('creating DateTime')
-                    df['DateTime'] = pd.to_datetime(df['date'])
-                    # print('creating index')
-                    df = df.set_index('DateTime')
-                    # print('dropping date')
-                    df = df.drop(['date'], axis=1)
-                    # !!!! RESAMPLE TICKERS INTO USABLE TIMEFRAMES
-                    # print('resample 1m / 1T')
-                    df = df.resample('1T', label='right', closed='right').agg({
-                        'open': 'first',
-                        'high': 'max',
-                        'low': 'min',
-                        'close': 'last',
-                        'volume': 'last',
-                        'quote': 'last'
-                    })
+#             # filterTicker = []
+#             # try:
+#             # for x in tableTickers:
+#             # if market["id"] in x:
+#             # filterTicker.append(x)
+#             # print(filterTicker)
+#             # print(len(filterTicker))
+#             # df.to_timeseries(index='date')
+#             # print(df)
+#             if len(filterTicker) > 21:  # minimum 20 tickers to build BolingerBands
+#                 try:
+#                     # print(df)
+#                     # print(len(filterTicker))
+#                     lastTicker = filterTicker[-1]
+#                     # print(lastTicker)
+#                     # print(type(lastTicker))
+#                     # if lastTicker['quote'] > 50:       # ! min volume > 50 BTC   !!!! we do this in the frontend from now !!!!!
+#                     # print('VOLUME OK')
+#                     # print('creating dataframe')
+#                     df = pd.DataFrame(
+#                         filterTicker,
+#                         columns=[
+#                             "id",
+#                             "date",
+#                             "symbol",
+#                             "market",
+#                             "close",
+#                             "open",
+#                             "high",
+#                             "low",
+#                             "volume",
+#                             "quote",
+#                         ],
+#                     )
+#                     print(df['close'])
+#                     # print('creating DateTime')
+#                     df['DateTime'] = pd.to_datetime(df['date'])
+#                     # print('creating index')
+#                     df = df.set_index('DateTime')
+#                     # print('dropping date')
+#                     df = df.drop(['date'], axis=1)
+#                     # !!!! RESAMPLE TICKERS INTO USABLE TIMEFRAMES
+#                     # print('resample 1m / 1T')
+#                     df = df.resample('1T', label='right', closed='right').agg({
+#                         'open': 'first',
+#                         'high': 'max',
+#                         'low': 'min',
+#                         'close': 'last',
+#                         'volume': 'last',
+#                         'quote': 'last'
+#                     })
 
-                    # print(type(lastTicker))
-                    # print(lastTicker.quote)
-                    # df = filterTicker.to_timeseries(index="date")
-                    # print(df.tail())
-                    # print(len(filterTicker))
-                    # print(lastTicker)
-                    # df.ta.indicators()
-                    # help(ta.stoch)
-                    # Returns:   BB          > help(ta.bbands)
-                    #    pd.DataFrame: lower, mid, upper, bandwidth columns.
-                    # print('creating BB')
+#                     # print(type(lastTicker))
+#                     # print(lastTicker.quote)
+#                     # df = filterTicker.to_timeseries(index="date")
+#                     # print(df.tail())
+#                     # print(len(filterTicker))
+#                     # print(lastTicker)
+#                     # df.ta.indicators()
+#                     # help(ta.stoch)
+#                     # Returns:   BB          > help(ta.bbands)
+#                     #    pd.DataFrame: lower, mid, upper, bandwidth columns.
+#                     # print('creating BB')
 
-                    df.ta.bbands(
-                        close=df["close"],
-                        length=20,
-                        std=2,
-                        mamode="sma",
-                        cumulative=True,
-                        append=True,
-                        fill='nearest',
-                    )
-                    print(df.tail())
-                    # print(df.columns)
-                    if (
-                        float(df.iloc[-1, df.columns.get_loc("close")])
-                        < float(df.iloc[-1, df.columns.get_loc("BBL_20_2.0")])
-                        and float(df.iloc[-1, df.columns.get_loc("BBB_20_2.0")]) >= 1.5
-                    ):
-                        # print(df["BBB_20_2.0"])
-                        # print(df.iloc[
-                        #         -1, df.columns.get_loc("symbol", "BBL_20_2.0", "BBL_20_2.0")
-                        #     ])
-                        # print(df.tail())
-                        # Returns:   STOCH       > help(ta.stoch)
-                        #     pd.DataFrame: %K, %D columns.
-                        df.ta.stoch(
-                            high=df["high"],
-                            low=df["low"],
-                            smooth_k=1,
-                            cumulative=True,
-                            append=True,
-                        )
-                        # print(df.columns)
-                        print(df.tail())
-                        # Index(['id', 'symbol', 'market', 'close', 'open', 'high', 'low', 'volume',
-                        # 'quote', 'BBL_20_2.0', 'BBM_20_2.0', 'BBU_20_2.0', 'BBB_20_2.0',
-                        # 'STOCHk_14_3_1', 'STOCHd_14_3_1'],dtype='object')
-                        # df.iloc[-1:]
-                        if float(df.iloc[-1, df.columns.get_loc("STOCHk_14_3_1")]) < 20:
-                            # print(df.tail())
-                            # print(df.columns)
-                            print(
-                                str(df.iloc[-1, df.columns.get_loc("symbol")])
-                                + " found something: "
-                                + lastTicker['date']
-                                + " (UTC)  Price: "
-                                + str(df.iloc[-1, df.columns.get_loc("close")])
-                                + " -> BB: "
-                                + str(df.iloc[-1, df.columns.get_loc("BBL_20_2.0")])
-                                + " Stoch: "
-                                + str(df.iloc[-1, df.columns.get_loc("STOCHk_14_3_1")])
-                            )
-                            data = {
-                                "date": lastTicker['date'],
-                                "symbol": df.iloc[-1, df.columns.get_loc("symbol")],
-                                "market": df.iloc[-1, df.columns.get_loc("market")],
-                                "close": round(
-                                    df.iloc[-1, df.columns.get_loc("close")], 8
-                                ),
-                                "volume": round(
-                                    df.iloc[-1,
-                                            df.columns.get_loc("volume")], 2
-                                ),
-                                "quote": round(
-                                    df.iloc[-1, df.columns.get_loc("quote")], 2
-                                ),
-                                "bbl": round(
-                                    df.iloc[-1,
-                                            df.columns.get_loc("BBL_20_2.0")], 8
-                                ),
-                                "bbm": round(
-                                    df.iloc[-1,
-                                            df.columns.get_loc("BBM_20_2.0")], 8
-                                ),
-                                "bbu": round(
-                                    df.iloc[-1,
-                                            df.columns.get_loc("BBU_20_2.0")], 8
-                                ),
-                                "bbb": round(
-                                    df.iloc[-1,
-                                            df.columns.get_loc("BBB_20_2.0")], 1
-                                ),
-                                "stochk": round(
-                                    df.iloc[-1,
-                                            df.columns.get_loc("STOCHk_14_3_1")], 0
-                                ),
-                                "stockd": round(
-                                    df.iloc[-1,
-                                            df.columns.get_loc("STOCHd_14_3_1")], 0
-                                ),
-                            }
+#                     df.ta.bbands(
+#                         close=df["close"],
+#                         length=20,
+#                         std=2,
+#                         mamode="sma",
+#                         cumulative=True,
+#                         append=True,
+#                         fill='nearest',
+#                     )
+#                     print(df.tail())
+#                     # print(df.columns)
+#                     if (
+#                         float(df.iloc[-1, df.columns.get_loc("close")])
+#                         < float(df.iloc[-1, df.columns.get_loc("BBL_20_2.0")])
+#                         and float(df.iloc[-1, df.columns.get_loc("BBB_20_2.0")]) >= 1.5
+#                     ):
+#                         # print(df["BBB_20_2.0"])
+#                         # print(df.iloc[
+#                         #         -1, df.columns.get_loc("symbol", "BBL_20_2.0", "BBL_20_2.0")
+#                         #     ])
+#                         # print(df.tail())
+#                         # Returns:   STOCH       > help(ta.stoch)
+#                         #     pd.DataFrame: %K, %D columns.
+#                         df.ta.stoch(
+#                             high=df["high"],
+#                             low=df["low"],
+#                             smooth_k=1,
+#                             cumulative=True,
+#                             append=True,
+#                         )
+#                         # print(df.columns)
+#                         print(df.tail())
+#                         # Index(['id', 'symbol', 'market', 'close', 'open', 'high', 'low', 'volume',
+#                         # 'quote', 'BBL_20_2.0', 'BBM_20_2.0', 'BBU_20_2.0', 'BBB_20_2.0',
+#                         # 'STOCHk_14_3_1', 'STOCHd_14_3_1'],dtype='object')
+#                         # df.iloc[-1:]
+#                         if float(df.iloc[-1, df.columns.get_loc("STOCHk_14_3_1")]) < 20:
+#                             # print(df.tail())
+#                             # print(df.columns)
+#                             print(
+#                                 str(df.iloc[-1, df.columns.get_loc("symbol")])
+#                                 + " found something: "
+#                                 + lastTicker['date']
+#                                 + " (UTC)  Price: "
+#                                 + str(df.iloc[-1, df.columns.get_loc("close")])
+#                                 + " -> BB: "
+#                                 + str(df.iloc[-1, df.columns.get_loc("BBL_20_2.0")])
+#                                 + " Stoch: "
+#                                 + str(df.iloc[-1, df.columns.get_loc("STOCHk_14_3_1")])
+#                             )
+#                             data = {
+#                                 "date": lastTicker['date'],
+#                                 "symbol": df.iloc[-1, df.columns.get_loc("symbol")],
+#                                 "market": df.iloc[-1, df.columns.get_loc("market")],
+#                                 "close": round(
+#                                     df.iloc[-1, df.columns.get_loc("close")], 8
+#                                 ),
+#                                 "volume": round(
+#                                     df.iloc[-1,
+#                                             df.columns.get_loc("volume")], 2
+#                                 ),
+#                                 "quote": round(
+#                                     df.iloc[-1, df.columns.get_loc("quote")], 2
+#                                 ),
+#                                 "bbl": round(
+#                                     df.iloc[-1,
+#                                             df.columns.get_loc("BBL_20_2.0")], 8
+#                                 ),
+#                                 "bbm": round(
+#                                     df.iloc[-1,
+#                                             df.columns.get_loc("BBM_20_2.0")], 8
+#                                 ),
+#                                 "bbu": round(
+#                                     df.iloc[-1,
+#                                             df.columns.get_loc("BBU_20_2.0")], 8
+#                                 ),
+#                                 "bbb": round(
+#                                     df.iloc[-1,
+#                                             df.columns.get_loc("BBB_20_2.0")], 1
+#                                 ),
+#                                 "stochk": round(
+#                                     df.iloc[-1,
+#                                             df.columns.get_loc("STOCHk_14_3_1")], 0
+#                                 ),
+#                                 "stockd": round(
+#                                     df.iloc[-1,
+#                                             df.columns.get_loc("STOCHd_14_3_1")], 0
+#                                 ),
+#                             }
 
-                            # oldAlerts = r.get("alerts")
-                            # # print(oldAlerts)
-                            # # print(type(oldAlerts))
-                            # if oldAlerts is not None:
-                            #     oldAlerts = json.loads(oldAlerts)
-                            #     print(type(oldAlerts))
-                            #     oldAlerts.append(data)
-                            #     r.set("alerts", json.dumps(oldAlerts))
-                            # else:
-                            #     r.set("alerts", json.dumps([data]))
-                            print('!! ALERT !!')
-                            print('!! ALERT !!')
-                            print('!! ALERT !!')
-                            print(
-                                {"symbol": df.iloc[-1, df.columns.get_loc("symbol")], })
-                            print('!! ALERT !!')
-                            print('!! ALERT !!')
-                            print('!! ALERT !!')
-                            headers = {
-                                "Content-Type": "application/json",
-                                "accept": "application/json"
-                            }
-                            #     # requests.post("http://nextjs:3000/api/baro/newBaro", data=data)
-                            #     # requests.post("http://10.20.12.164:8000/api/v1/baro/",
-                            #     #               json=data1, headers=headers)
+#                             # oldAlerts = r.get("alerts")
+#                             # # print(oldAlerts)
+#                             # # print(type(oldAlerts))
+#                             # if oldAlerts is not None:
+#                             #     oldAlerts = json.loads(oldAlerts)
+#                             #     print(type(oldAlerts))
+#                             #     oldAlerts.append(data)
+#                             #     r.set("alerts", json.dumps(oldAlerts))
+#                             # else:
+#                             #     r.set("alerts", json.dumps([data]))
+#                             print('!! ALERT !!')
+#                             print('!! ALERT !!')
+#                             print('!! ALERT !!')
+#                             print(
+#                                 {"symbol": df.iloc[-1, df.columns.get_loc("symbol")], })
+#                             print('!! ALERT !!')
+#                             print('!! ALERT !!')
+#                             print('!! ALERT !!')
+#                             headers = {
+#                                 "Content-Type": "application/json",
+#                                 "accept": "application/json"
+#                             }
+#                             #     # requests.post("http://nextjs:3000/api/baro/newBaro", data=data)
+#                             #     # requests.post("http://10.20.12.164:8000/api/v1/baro/",
+#                             #     #               json=data1, headers=headers)
 
-                            #     # print(data1Test)
-                            requests.post(os.environ.get('API') + "v2/alert/",
-                                          json=data, headers=headers)
-                            print(data)
-                            # insertAlert(data)
-                            # else:
-                            # print('found nothing: '+ lastTicker.date.strftime('%y-%m-%d %H:%M') + '(UTC)  Price: ' +
-                            # str(df.iloc[-1, df.columns.get_loc('close')])  +
-                            # str(df.iloc[-1, df.columns.get_loc('symbol')]) + ' -> BB: ' +
-                            # str(df.iloc[-1, df.columns.get_loc('BBL_20_2.0')]) + ' Stoch: ' +
-                            # str(df.iloc[-1, df.columns.get_loc('STOCHk_14_3_1')]))
-                except TypeError as error:
-                    print(error)
-                except KeyError as error:
-                    print(error)
+#                             #     # print(data1Test)
+#                             requests.post(os.environ.get('API') + "v2/alert/",
+#                                           json=data, headers=headers)
+#                             print(data)
+#                             # insertAlert(data)
+#                             # else:
+#                             # print('found nothing: '+ lastTicker.date.strftime('%y-%m-%d %H:%M') + '(UTC)  Price: ' +
+#                             # str(df.iloc[-1, df.columns.get_loc('close')])  +
+#                             # str(df.iloc[-1, df.columns.get_loc('symbol')]) + ' -> BB: ' +
+#                             # str(df.iloc[-1, df.columns.get_loc('BBL_20_2.0')]) + ' Stoch: ' +
+#                             # str(df.iloc[-1, df.columns.get_loc('STOCHk_14_3_1')]))
+#                 except TypeError as error:
+#                     print(error)
+#                 except KeyError as error:
+#                     print(error)
 
 
 # @shared_task
@@ -1490,27 +1490,27 @@ def build_indicators_from_candles():
 #     return balances
 
 
-@shared_task
-def clean_old_tickers():
-    '''clean old tickers'''
-    # page = 1
-    # i = 0
-    # cleaning = True
-    # while cleaning:
-    response = requests.get(
-        os.environ.get('API') + 'v2/tickerexpired/45')
-    if not response:
-        return 'error'
-    data = response.json()
+# @shared_task
+# def clean_old_tickers():
+#     '''clean old tickers'''
+#     # page = 1
+#     # i = 0
+#     # cleaning = True
+#     # while cleaning:
+#     response = requests.get(
+#         os.environ.get('API') + 'v2/tickerexpired/45')
+#     if not response:
+#         return 'error'
+#     data = response.json()
 
-    # # print(data)
-    # # print(type(data))
-    # for data_id in data["items"]:
-    #     print(data_id)
-    #     # print(type(data_id))
-    #     requests.delete('http://10.20.12.164:8000/api/v2/ticker/' + str(data_id))
-    #     i += 1
-    # if data["size"] > data["total"]:
-    #     cleaning = False
-    #     return 'deleted ' + str(i) + ' tickers'
-    return data
+#     # # print(data)
+#     # # print(type(data))
+#     # for data_id in data["items"]:
+#     #     print(data_id)
+#     #     # print(type(data_id))
+#     #     requests.delete('http://10.20.12.164:8000/api/v2/ticker/' + str(data_id))
+#     #     i += 1
+#     # if data["size"] > data["total"]:
+#     #     cleaning = False
+#     #     return 'deleted ' + str(i) + ' tickers'
+#     return data

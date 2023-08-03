@@ -1,13 +1,16 @@
 '''
 baro routers
 '''
-from fastapi import APIRouter, Body, HTTPException, Request, status
+from fastapi import APIRouter, Body, HTTPException, Request, status, Depends
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 # from project.auth import oauth2
 from fastapi_pagination import Page, paginate
 import pandas as pd
 from .models import BaroModel, BaroUpdateModel, ShowBaro, ShowBarosTime
+from project.auth import oauth2
+from typing import Annotated
+from ..users.models import UserMeModel
 
 router = APIRouter(
     prefix="/api/v2/baro",
@@ -16,7 +19,7 @@ router = APIRouter(
 
 
 @router.post("/", response_description="Add new barometer")
-async def create_baro(request: Request, baro: BaroModel = Body(...)):
+async def create_baro(request: Request, current_user: Annotated[UserMeModel, Depends(oauth2.get_current_user)], baro: BaroModel = Body(...)):
     '''Add new barometer'''
     # print(baro)
     baro = jsonable_encoder(baro)
@@ -27,7 +30,7 @@ async def create_baro(request: Request, baro: BaroModel = Body(...)):
 
 
 @router.get("/", response_description="Get all baros", response_model=Page[ShowBaro])
-async def list_baros(request: Request):
+async def list_baros(request: Request, current_user: Annotated[UserMeModel, Depends(oauth2.get_current_user)]):
     '''Get all baros'''
     baros = []
     for doc in await request.app.mongodb["baros"].find().to_list(length=None):
@@ -43,7 +46,7 @@ async def list_baros(request: Request):
 #     raise HTTPException(status_code=404, detail=f"baro {id} not found")
 
 @router.get("/{timeframe}", response_description="Get baro by id", response_model=Page[ShowBarosTime])
-async def show_baro_time(timeframe: str, request: Request):
+async def show_baro_time(timeframe: str, current_user: Annotated[UserMeModel, Depends(oauth2.get_current_user)], request: Request):
     '''get baros time'''
     baros = []
     for doc in await request.app.mongodb["baros"].find().to_list(length=None):
@@ -103,7 +106,7 @@ def resample_baros(timeframe, baros):
 
 
 @router.put("/{id}", response_description="Update a task")
-async def update_baro(id: str, request: Request, baro: BaroUpdateModel = Body(...)):
+async def update_baro(id: str, current_user: Annotated[UserMeModel, Depends(oauth2.get_current_user)], request: Request, baro: BaroUpdateModel = Body(...)):
     '''Update a baro'''
     baro = {k: v for k, v in baro.dict().items() if v is not None}
 
@@ -127,7 +130,7 @@ async def update_baro(id: str, request: Request, baro: BaroUpdateModel = Body(..
 
 
 @router.delete("/{id}", response_description="Delete Task")
-async def delete_baro(id: str, request: Request):
+async def delete_baro(id: str, current_user: Annotated[UserMeModel, Depends(oauth2.get_current_user)], request: Request):
     '''Delete a baro'''
     delete_result = await request.app.mongodb["baros"].delete_one({"_id": id})
 

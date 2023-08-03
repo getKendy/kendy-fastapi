@@ -3,7 +3,7 @@ ticker routers
 '''
 
 from typing import List
-from fastapi import APIRouter, Body, HTTPException, Request, status
+from fastapi import APIRouter, Body, HTTPException, Request, status, Depends
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from requests import delete
@@ -15,15 +15,20 @@ from fastapi_pagination import Page, paginate
 from project.celery_tasks import tasks
 from os import environ
 from dateutil.parser import parse
+from project.auth import oauth2
+from typing import Annotated
+from ..users.models import UserMeModel
 
 # r = redis.Redis(host="redis", port=6379, db=0)
 binanceRedis = redis.Redis(host=environ.get('REDIS_CACHE'),
                 port=environ.get('REDIS_PORT'),
-                db=environ.get('REDIS_DB_BINANCE'))
+                db=environ.get('REDIS_DB_BINANCE'),
+                password=environ.get('REDIS_PASSWORD'))
 
 kucoinRedis = redis.Redis(host=environ.get('REDIS_CACHE'),
                 port=environ.get('REDIS_PORT'),
-                db=environ.get('REDIS_DB_KUCOIN'))
+                db=environ.get('REDIS_DB_KUCOIN'),
+                password=environ.get('REDIS_PASSWORD'))
 
 router = APIRouter(
     prefix="/api/v2/ticker",
@@ -42,7 +47,7 @@ router = APIRouter(
 
 
 @router.post("s/", response_description="Add new tickers")
-async def create_tickers(request: Request, tickers: List[TickerModel] = Body(...)):
+async def create_tickers(request: Request, current_user: Annotated[UserMeModel, Depends(oauth2.get_current_user)], tickers: List[TickerModel] = Body(...)):
     '''Add new tickers'''
     # print(tickers)
     tickers = jsonable_encoder(tickers)
@@ -53,7 +58,7 @@ async def create_tickers(request: Request, tickers: List[TickerModel] = Body(...
 
 
 @router.get("/", response_description="Get all tickers", response_model=Page[ShowTickerModel])
-async def list_tickers(exchange: str, request: Request):
+async def list_tickers(exchange: str, current_user: Annotated[UserMeModel, Depends(oauth2.get_current_user)], request: Request):
     '''Get all tickers'''
     tickers = []
     for doc in await request.app.mongodb["tickers"].find({'exchange': exchange}).to_list(length=None):
@@ -62,7 +67,7 @@ async def list_tickers(exchange: str, request: Request):
 
 
 @router.get("expired/{hours}", response_description="Remove all expired ticker ids")
-async def list_expired_tickers(hours: int, request: Request):
+async def list_expired_tickers(hours: int, current_user: Annotated[UserMeModel, Depends(oauth2.get_current_user)], request: Request):
     '''Remove all expired tickers'''
     tickers = []
     data = await request.app.mongodb["tickers"].find().to_list(length=10000)
@@ -83,7 +88,7 @@ async def list_expired_tickers(hours: int, request: Request):
 
 
 @router.get('/{symbol}', status_code=status.HTTP_200_OK, response_description="Get ticker by symbol", response_model=TickerModel)
-async def get_ticker(symbol: str, exchange: str, request: Request):
+async def get_ticker(symbol: str, exchange: str, current_user: Annotated[UserMeModel, Depends(oauth2.get_current_user)], request: Request):
     '''Get ticker by symbol'''
     tickers = []
     for doc in await request.app.mongodb["tickers"].find({'symbol': symbol, 'exchange': exchange}).to_list(length=None):
@@ -96,7 +101,7 @@ async def get_ticker(symbol: str, exchange: str, request: Request):
 
 
 @router.get('s/{symbol}', status_code=status.HTTP_200_OK, response_description="Get multiple tickers by symbol")
-async def get_tickers_by_symbol(symbol: str, exchange: str, request: Request):
+async def get_tickers_by_symbol(symbol: str, exchange: str, current_user: Annotated[UserMeModel, Depends(oauth2.get_current_user)], request: Request):
     '''Get tickers by symbol'''
     tickers = []
     for doc in await request.app.mongodb["tickers"].find({'symbol': symbol, 'exchange': exchange}).to_list(length=None):
@@ -109,7 +114,7 @@ async def get_tickers_by_symbol(symbol: str, exchange: str, request: Request):
 
 
 @router.delete("/{id}", response_description="Delete ticker")
-async def delete_ticker(id: str, request: Request):
+async def delete_ticker(id: str, current_user: Annotated[UserMeModel, Depends(oauth2.get_current_user)], request: Request):
     '''Delete ticker'''
     deleted_result = await request.app.mongodb["tickers"].delete_one({"_id": id})
     if deleted_result.deleted_count == 1:
@@ -119,7 +124,7 @@ async def delete_ticker(id: str, request: Request):
 
 
 @router.get('redis/{symbol}', status_code=status.HTTP_200_OK)
-def get_redis(symbol:str, exchange: str):
+def get_redis(symbol:str, exchange: str, current_user: Annotated[UserMeModel, Depends(oauth2.get_current_user)]):
     '''Get redis'''
     try:
         if exchange == 'binance':

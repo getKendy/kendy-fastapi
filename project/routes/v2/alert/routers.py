@@ -8,6 +8,9 @@ from .models import AlertModel, ShowAlert
 from fastapi_pagination import Page, paginate
 from datetime import datetime, timedelta
 from dateutil.parser import parse
+from project.auth import oauth2
+from typing import Annotated
+from ..users.models import UserMeModel
 
 # from project.auth import oauth2
 # import pandas as pd
@@ -19,7 +22,7 @@ router = APIRouter(
 
 
 @router.post("/", response_description="Add new alert")
-async def create_alert(request: Request, alert: AlertModel = Body(...)):
+async def create_alert(request: Request, current_user: Annotated[UserMeModel, Depends(oauth2.get_current_user)], alert: AlertModel = Body(...)):
     '''Add new alertmeter'''
     # print(alert)
     alert = jsonable_encoder(alert)
@@ -30,7 +33,7 @@ async def create_alert(request: Request, alert: AlertModel = Body(...)):
 
 
 @router.get("/", response_description="Get all alerts", response_model=Page[ShowAlert])
-async def list_alerts(request: Request):
+async def list_alerts(request: Request, current_user: Annotated[UserMeModel, Depends(oauth2.get_current_user)]):
     '''Get all alerts'''
     alerts = []
     for doc in await request.app.mongodb["alerts"].find().to_list(length=None):
@@ -141,7 +144,7 @@ async def list_alerts(request: Request):
 
 
 @router.get("expired/{hours}", response_description="Remove all expired alert ids")
-async def list_expired_tickers(hours: int, request: Request):
+async def list_expired_tickers(hours: int, request: Request, current_user: Annotated[UserMeModel, Depends(oauth2.get_current_user)]):
     '''Remove all expired tickers'''
     alerts = []
     data = await request.app.mongodb["alerts"].find().to_list(length=100)
