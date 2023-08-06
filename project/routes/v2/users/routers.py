@@ -48,8 +48,8 @@ async def get_current_active_user(current_user: Annotated[UserModel, Depends(oau
 
 
 @router.post("/", response_description="Add new user")
-async def create_user(token: Annotated[str, Depends(get_current_active_user)], request: Request, user: UserModel = Body(...)):
-# async def create_user(request: Request, user: UserModel = Body(...)):
+# async def create_user(token: Annotated[str, Depends(get_current_active_user)], request: Request, user: UserModel = Body(...)):
+async def create_user(request: Request, user: UserModel = Body(...)):
     '''Add new user'''
     user = jsonable_encoder(user)
     # print(user)
