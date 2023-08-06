@@ -6,7 +6,7 @@ from os import environ
 
 SECRET_KEY = environ.get('JWT_TOKEN')
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 1440
+ACCESS_TOKEN_EXPIRE_MINUTES = 6
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):

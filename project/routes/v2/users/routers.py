@@ -49,9 +49,10 @@ async def get_current_active_user(current_user: Annotated[UserModel, Depends(oau
 
 @router.post("/", response_description="Add new user")
 async def create_user(token: Annotated[str, Depends(get_current_active_user)], request: Request, user: UserModel = Body(...)):
+# async def create_user(request: Request, user: UserModel = Body(...)):
     '''Add new user'''
     user = jsonable_encoder(user)
-    print(user)
+    # print(user)
     user = {
         "_id": user['_id'],
         "date": user['date'],
@@ -59,7 +60,7 @@ async def create_user(token: Annotated[str, Depends(get_current_active_user)], r
         "email": user['email'],
         "password": Hash.bcrypt(user['password'])
     }
-    print(user)
+    # print(user)
     new_user = await request.app.mongodb["users"].insert_one(user)
     created_user = await request.app.mongodb["users"].find_one({'_id': new_user.inserted_id})
 
