@@ -15,6 +15,7 @@ class AlertModel(BaseModel):
     volume: float = Field(...)
     quote: float = Field(...)
     volume24h: float = Field(...)
+    trend24h: float = Field(...)
     bbl: float = Field(...)
     bbm: float = Field(...)
     bbu: float = Field(...)
@@ -36,6 +37,7 @@ class AlertModel(BaseModel):
                 'volume': '',
                 'quote': '',
                 'volume24h': '',
+                'trend24h': '',
                 'bbl': '',
                 'bbm': '',
                 'bbu': '',
@@ -62,6 +64,7 @@ class ShowAlert(AlertModel):
                 'volume': '',
                 'quote': '',
                 'volume24h': '',
+                'trend24h': '',
                 'bbl': '',
                 'bbm': '',
                 'bbu': '',
